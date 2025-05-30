@@ -1,0 +1,33 @@
+name: Build
+
+on:
+  workflow_call:
+    inputs:
+      ubuntu-version:
+        description: What version of Ubuntu to use for the build (default is latest)
+        default: latest
+        required: false
+        type: string
+      sdl:
+        description: Whether sdl is needed for the build
+        required: false
+        type: boolean
+
+jobs:
+  build:
+    name: Build on Ubuntu ${{ inputs.ubuntu-version }}
+    runs-on: ubuntu-${{ inputs.ubuntu-version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install SDL2
+        if: ${{ inputs.sdl == true }}
+        uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: libsdl2-2.0-0 libsdl2-dev
+
+      - name: Build
+        run: make

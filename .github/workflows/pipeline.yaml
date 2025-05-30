@@ -1,0 +1,27 @@
+name: Pipeline
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - "**"
+  pull_request:
+    branches:
+      - "**"
+
+jobs:
+  norminette:
+    name: Norminette
+    uses: ./.github/workflows/norminette.yaml
+
+  build_ubuntu_22_04:
+    name: Build on Ubuntu 22.04
+    uses: ./.github/workflows/build.yaml
+    with:
+      ubuntu-version: 22.04
+
+  build_ubuntu_latest:
+    name: Build on Ubuntu latest
+    uses: ./.github/workflows/build.yaml
+    with:
+      ubuntu-version: latest

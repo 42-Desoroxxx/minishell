@@ -1,0 +1,53 @@
+name: Norminette
+on:
+  workflow_call:
+
+jobs:
+  norminette:
+    name: Norminette
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Norminette
+        shell: bash
+        run: |
+          sudo python3 -m pip install norminette
+
+      - name: Run Norminette
+        shell: bash
+        run: |
+          set +e
+          output=$(norminette 2>&1)
+          status=$?
+          # Filter out lines that end with `: OK!`
+          filtered_output=$(echo "$output" | grep -vE ': OK!$')
+
+          # Check if there are actual errors (not just notices)
+          if echo "$filtered_output" | grep -qE '^Error:'; then
+            real_error=1
+          else
+            real_error=0
+          fi
+
+          # Print each line with appropriate color (red for errors, yellow for notices)
+          while IFS= read -r line; do
+            if [[ "$line" == Error:* ]]; then
+              echo -e "\033[0;31m$line\033[0m"  # Red for errors
+            elif [[ "$line" == Notice:* ]]; then
+              echo -e "\033[0;33m$line\033[0m"  # Yellow for notices
+            else
+              echo -e "\033[0;31m$line\033[0m"
+            fi
+          done <<< "$filtered_output"
+
+          # Only fail on actual errors, not notices
+          if [ $real_error -ne 0 ]; then
+            echo -e "\033[0;31mNorminette found errors that need to be fixed\033[0m"
+            exit 1
+          fi
+
+          if [ $status -ne 0 ]; then
+            echo -e "\033[0;33mNorminette exited with code $status but only contains notices (warnings)\033[0m"
+          fi
