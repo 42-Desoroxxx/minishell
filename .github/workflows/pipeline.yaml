@@ -10,18 +10,23 @@ on:
       - "**"
 
 jobs:
+  salloc:
+    name: Salloc
+    uses: ./.github/workflows/salloc.yaml
+
   norminette:
+    needs: salloc
     name: Norminette
     uses: ./.github/workflows/norminette.yaml
 
   build_ubuntu_22_04:
+    needs: norminette
     name: Build on Ubuntu 22.04
     uses: ./.github/workflows/build.yaml
     with:
       ubuntu-version: 22.04
 
   build_ubuntu_latest:
+    needs: norminette
     name: Build on Ubuntu latest
     uses: ./.github/workflows/build.yaml
-    with:
-      ubuntu-version: latest

@@ -1,0 +1,26 @@
+name: Salloc
+
+on:
+  workflow_call:
+
+jobs:
+  salloc:
+    name: Salloc
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check for malloc usage
+        shell: bash
+        run: |
+          MALLOC_FILES=$(grep -r --include="*.c" -E 'malloc\s*\(' . || true)
+
+          if [ -n "$MALLOC_FILES" ]; then
+            echo "\033[0;31m::error::Found malloc usage in the following files:\033[0m"
+            echo "\033[0;31m$MALLOC_FILES\033[0m"
+            echo "\033[0;31mReplace it with ft_calloc!\033[0m"
+            exit 1
+          else
+            echo "No malloc usage found. Yippeee :3"
+          fi

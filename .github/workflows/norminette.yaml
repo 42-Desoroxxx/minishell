@@ -1,4 +1,5 @@
 name: Norminette
+
 on:
   workflow_call:
 
@@ -34,9 +35,9 @@ jobs:
           # Print each line with appropriate color (red for errors, yellow for notices)
           while IFS= read -r line; do
             if [[ "$line" == Error:* ]]; then
-              echo -e "\033[0;31m$line\033[0m"  # Red for errors
+              echo -e "\033[0;31m$line\033[0m"
             elif [[ "$line" == Notice:* ]]; then
-              echo -e "\033[0;33m$line\033[0m"  # Yellow for notices
+              echo -e "\033[0;33m$line\033[0m"
             else
               echo -e "\033[0;31m$line\033[0m"
             fi
