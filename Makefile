@@ -56,7 +56,7 @@ endif
 # Libraries
 LIB_DIRS = libft
 LIB_FILES = libft/libft.a
-LDFLAGS = 
+LDFLAGS = -lreadline
 
 # Directories
 SRC = src

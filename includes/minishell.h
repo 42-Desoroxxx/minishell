@@ -16,5 +16,10 @@
 # include <libft.h>
 # include <ft_printf.h>
 # include <get_next_line.h>
+# include <signal.h>
+# include <stdio.h>
+# include <readline/readline.h>
+# include <readline/history.h>
+#include <linux/limits.h>
 
 #endif
