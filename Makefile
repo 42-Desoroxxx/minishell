@@ -64,7 +64,7 @@ OBJ = obj
 INCLUDES = -Iincludes $(foreach lib,$(LIB_DIRS),-I$(lib)/includes)
 
 # Sources
-SRC_FILES := minishell.c
+SRC_FILES := minishell.c lexer.c
 SRCS := $(addprefix $(SRC)/,$(SRC_FILES))
 OBJS := $(patsubst $(SRC)/%.c,$(OBJ)/%.o,$(SRCS))
 

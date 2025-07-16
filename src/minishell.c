@@ -6,7 +6,7 @@
 /*   By: llage <llage@student.42angouleme.fr>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/30 20:27:04 by llage             #+#    #+#             */
-/*   Updated: 2025/06/01 21:36:46 by llage            ###   ########.fr       */
+/*   Updated: 2025/07/07 17:42:51 by rvitiell         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,7 @@ int	main(int argc, char *argv[], char *envp[])
 	{
 		prompt = getprompt();
 		line = readline(prompt);
+		lexer(line);
 		free(prompt);
 		if (line == NULL)
 			break;

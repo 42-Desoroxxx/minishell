@@ -6,34 +6,51 @@
 /*   By: rvitiell <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/29 21:42:38 by rvitiell          #+#    #+#             */
-/*   Updated: 2025/07/06 17:32:41 by rvitiell         ###   ########.fr       */
+/*   Updated: 2025/07/10 19:31:15 by rvitiell         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <minishell.h>
 
 //get your shit together Romane, it's essentialy a double linked list, you can do it
+//well done you did it
+//now you have to make it link in reverse
+//that is done too, you are so good
+//make the get_type work
+//and create a custom split for shell commands
 
-void	init_token_data(t_token token, char *word)
+char	**MS_split(char *input)
 {
-	token->value = ft_calloc(ft_strlen(word) + 1, sizeof(char));
-	if (!token->value)
-		return (NULL);
-	strlcpy(token->value, word, ft_strlen(word));
-	token->next = NULL;
+	
 }
 
-t_token	tokenize(t_token *token, t_token prev, char *word)
+int	get_type(char *word)
 {
-	if (!token)
+	if (strlen)
+}
+
+void	tokenize(t_token **token_list, char *word)
+{
+	t_token	*new_token;
+	t_token	*last_token;
+
+	new_token = ft_calloc(1, sizeof(t_token));
+	if (!new_token)
+		return ;
+	new_token->value = ft_calloc(ft_strlen(word) + 1, sizeof(char));
+	if (!(new_token->value))
+		return ;
+	ft_strlcpy(new_token->value, word, ft_strlen(word) + 1);
+	if (!(*token_list))
 	{
-		tokens = ft_calloc(1, sizeof(t_token) + 1);
-		if (!tokens)
-			return (NULL); //error and exit function
+		*token_list = new_token;
+		return ;
 	}
-	token->prev = prev;
-	init_token_data(token, word);
-	token->token_type = get_type(word);
+	last_token = *token_list;
+	while (last_token->next)
+		last_token = last_token->next;
+	last_token->next = new_token;
+	new_token->prev = last_token;
 }
 
 int	lexer(char *input)
@@ -41,18 +58,16 @@ int	lexer(char *input)
 	int	i;
 	char **tab_input;
 	t_token	*tokens;
-	t_token	*prev;
 
+	tab_input = MS_split(input);
 	i = 0;
-	tab_input = ft_split(input, ' '); //free it later
-	token = NULL;
-	prev = NULL;
+	tokens = NULL;
 	while (tab_input[i])
 	{
-		tokens = tokenize(tokens, prev, tab_input[i]);
-		tokens = tokens->next;
+		tokenize(&tokens, tab_input[i]);
+		free(tab_input[i]);
 		i++;
 	}
-	while (tokens->prev)
-		tokens = tokens->prev;
+	free(tab_input);
+	return (0);
 }
