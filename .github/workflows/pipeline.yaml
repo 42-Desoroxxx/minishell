@@ -22,8 +22,11 @@ jobs:
     name: Build on Ubuntu 22.04
     uses: ./.github/workflows/build.yaml
     with:
+      packages: libreadline-dev
       ubuntu-version: 22.04
 
   build_ubuntu_latest:
     name: Build on Ubuntu latest
     uses: ./.github/workflows/build.yaml
+    with:
+      packages: libreadline-dev
