@@ -8,10 +8,11 @@ on:
         default: latest
         required: false
         type: string
-      sdl:
-        description: Whether sdl is needed for the build
+      packages:
+        description: Space-separated list of packages to install (e.g., "libsdl2-2.0-0 libsdl2-dev")
         required: false
-        type: boolean
+        type: string
+        default: ''
 
 jobs:
   build:
@@ -23,11 +24,11 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Install SDL2
-        if: ${{ inputs.sdl == true }}
+      - name: Install packages
+        if: ${{ inputs.packages != '' }}
         uses: awalsh128/cache-apt-pkgs-action@latest
         with:
-          packages: libsdl2-2.0-0 libsdl2-dev
+          packages: ${{ inputs.packages }}
 
       - name: Build
         run: make
