@@ -6,7 +6,7 @@
 /*   By: llage <llage@student.42angouleme.fr>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/30 20:29:31 by llage             #+#    #+#             */
-/*   Updated: 2025/07/07 20:20:25 by rvitiell         ###   ########.fr       */
+/*   Updated: 2025/07/16 18:19:23 by rvitiell         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,7 @@ enum	token_type
 {
 	WORD = 1,
 	EMPTY = 0,
+	EQUAL = '=',
 	QUOTE = '\'',
 	LESSER = '<',
 	GREATER = '>',

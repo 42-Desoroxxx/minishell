@@ -6,27 +6,51 @@
 /*   By: rvitiell <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/29 21:42:38 by rvitiell          #+#    #+#             */
-/*   Updated: 2025/07/10 19:31:15 by rvitiell         ###   ########.fr       */
+/*   Updated: 2025/07/16 18:20:11 by rvitiell         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <minishell.h>
 
-//get your shit together Romane, it's essentialy a double linked list, you can do it
+//get your shit together Romane
+//it's essentialy a double linked list, you can do it
 //well done you did it
 //now you have to make it link in reverse
 //that is done too, you are so good
 //make the get_type work
 //and create a custom split for shell commands
 
-char	**MS_split(char *input)
+void	ms_split(char *input)
 {
-	
+	char	*result;
+	int		start;
+	int		end;
+	int		type;
+
+	start = 0;
+	end = 0;
+	type = 0;
+	while (input[end])
+	{
+		if (ft_isalpha(input[end]))
+		{
+			type = WORD;
+			end++;
+			continue ;
+		}
+	}
 }
 
 int	get_type(char *word)
 {
-	if (strlen)
+	if (word == "<")
+		return (LESSER);
+	else if (word == ">")
+		return (GREATER);
+	else if (word == "&")
+		return (AMPERSAND);
+	else
+		return (WORD);
 }
 
 void	tokenize(t_token **token_list, char *word)
@@ -55,11 +79,11 @@ void	tokenize(t_token **token_list, char *word)
 
 int	lexer(char *input)
 {
-	int	i;
-	char **tab_input;
+	int		i;
+	char	**tab_input;
 	t_token	*tokens;
 
-	tab_input = MS_split(input);
+	tab_input = ms_split(input);
 	i = 0;
 	tokens = NULL;
 	while (tab_input[i])
