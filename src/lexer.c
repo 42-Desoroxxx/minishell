@@ -6,7 +6,7 @@
 /*   By: rvitiell <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/29 21:42:38 by rvitiell          #+#    #+#             */
-/*   Updated: 2025/07/16 18:20:11 by rvitiell         ###   ########.fr       */
+/*   Updated: 2025/07/18 18:01:30 by rvitiell         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,40 +20,58 @@
 //make the get_type work
 //and create a custom split for shell commands
 
-void	ms_split(char *input)
+int	analyse(char *result, t_token **token_list)
+{
+	if (strncmp(result, "echo ", 5))
+	{
+		tokenize(token_list, result, WORD);
+		return (5);
+	}
+	return (0);
+}
+
+void	ft_shrink(char *src, int n)
+{
+	int	i;
+
+	i = 0;
+	while (src[i + n])
+	{
+		src[i] = src[i + n];
+		i++;
+	}
+	while (src[i])
+		src[i++] = '\0';
+}
+
+void	ms_split(char *input, t_token **token_list)
 {
 	char	*result;
-	int		start;
-	int		end;
+	int		i;
 	int		type;
 
-	start = 0;
-	end = 0;
 	type = 0;
-	while (input[end])
+	while (input)
 	{
-		if (ft_isalpha(input[end]))
+		i = 0;
+		result = ft_calloc(ft_strlen(input) + 1, sizeof(char));
+		if (!result)
+			return ;
+		while (input[i])
 		{
-			type = WORD;
-			end++;
-			continue ;
+			result[i] = input[i];
+			if (analyse(result, token_list))
+			{
+				ft_shrink(input, i);
+				break ;
+			}
+			i++;
 		}
+		free (result);
 	}
 }
 
-int	get_type(char *word)
-{
-	if (word == "<")
-		return (LESSER);
-	else if (word == ">")
-		return (GREATER);
-	else if (word == "&")
-		return (AMPERSAND);
-	else
-		return (WORD);
-}
-
-void	tokenize(t_token **token_list, char *word)
+void	tokenize(t_token **token_list, char *word, int type)
 {
 	t_token	*new_token;
 	t_token	*last_token;
@@ -75,6 +93,7 @@ void	tokenize(t_token **token_list, char *word)
 		last_token = last_token->next;
 	last_token->next = new_token;
 	new_token->prev = last_token;
+	new_token->token_type = type;
 }
 
 int	lexer(char *input)
@@ -83,15 +102,8 @@ int	lexer(char *input)
 	char	**tab_input;
 	t_token	*tokens;
 
-	tab_input = ms_split(input);
 	i = 0;
 	tokens = NULL;
-	while (tab_input[i])
-	{
-		tokenize(&tokens, tab_input[i]);
-		free(tab_input[i]);
-		i++;
-	}
-	free(tab_input);
+	ms_split(input, &tokens)
 	return (0);
 }

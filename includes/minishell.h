@@ -6,7 +6,7 @@
 /*   By: llage <llage@student.42angouleme.fr>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/30 20:29:31 by llage             #+#    #+#             */
-/*   Updated: 2025/07/16 18:19:23 by rvitiell         ###   ########.fr       */
+/*   Updated: 2025/07/18 18:03:22 by rvitiell         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,29 +20,26 @@
 # include <stdio.h>
 # include <readline/readline.h>
 # include <readline/history.h>
-#include <linux/limits.h>
+# include <linux/limits.h>
 
-enum	token_type
+enum	e_token_type
 {
-	WORD = 1,
 	EMPTY = 0,
-	EQUAL = '=',
-	QUOTE = '\'',
-	LESSER = '<',
-	GREATER = '>',
-	D_QUOTE = '"',
-	AMPERSAND = '&',
-	SEMICOLON = ';',
+	WORD = 1,
+	REDIR = 2,
+	EXP = 3,
+	STRING = 4,
 };
 
-typedef	struct s_token
+typedef struct s_token
 {
 	struct s_token	*prev;
 	struct s_token	*next;
-	char	*value;
-	int		token_type;
+	struct s_token	*string;
+	char			*value;
+	int				token_type;
 }	t_token;
 
-int lexer(char *input);
+int	lexer(char *input);
 
 #endif
