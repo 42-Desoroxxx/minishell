@@ -32,8 +32,8 @@ char	*getprompt(void)
 
 int	main(int argc, char *argv[], char *envp[])
 {
-	char *line;
-	char *prompt;
+	char	*line;
+	char	*prompt;
 
 	(void)argc;
 	(void)argv;
@@ -45,10 +45,10 @@ int	main(int argc, char *argv[], char *envp[])
 		lexer(line);
 		free(prompt);
 		if (line == NULL)
-			break;
+			break ;
 		if (line[0] == '\0')
-			continue;
-		if (line[0] != ' ') // ? Bash seems to not add things to history if the line starts with a space
+			continue ;
+		if (line[0] != ' ')
 			add_history(line);
 		ft_printf("%s\n", line);
 	}
