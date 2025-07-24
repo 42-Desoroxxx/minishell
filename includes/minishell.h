@@ -6,7 +6,7 @@
 /*   By: llage <llage@student.42angouleme.fr>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/30 20:29:31 by llage             #+#    #+#             */
-/*   Updated: 2025/07/18 18:03:22 by rvitiell         ###   ########.fr       */
+/*   Updated: 2025/07/24 21:54:30 by rvitiell         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,24 +22,48 @@
 # include <readline/history.h>
 # include <linux/limits.h>
 
-enum	e_token_type
+typedef enum e_token_type
 {
-	EMPTY = 0,
-	WORD = 1,
-	REDIR = 2,
-	EXP = 3,
-	STRING = 4,
-};
+	EMPTY,
+	WORD,
+	REDIR,
+	EXP,
+	PIPE,
+}	t_token_type;
+
+typedef enum e_status
+{
+	NONE,
+	QUOTE,
+	DOUBLE,
+}	t_status;
+
+typedef struct s_strview
+{
+	const char	*str;
+	int			len;
+}	t_strview;
+
+typedef struct s_lexer
+{
+	char		*cursor;
+	t_status	status;
+	t_strview	line;
+}	t_lexer;
 
 typedef struct s_token
 {
 	struct s_token	*prev;
 	struct s_token	*next;
-	struct s_token	*string;
 	char			*value;
 	int				token_type;
 }	t_token;
 
-int	lexer(char *input);
+int		lexer(char *input);
+char    get_char_cursor(t_lexer *lexer);
+char    get_next_char_cursor(t_lexer *lexer);
+void    cursor_advance(t_lexer *lexer, int len);
+void    skip_space(t_lexer *lexer);
+void	lexer_status(t_lexer *lexer);
 
 #endif
