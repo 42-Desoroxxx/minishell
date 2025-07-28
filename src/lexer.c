@@ -6,7 +6,7 @@
 /*   By: rvitiell <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/29 21:42:38 by rvitiell          #+#    #+#             */
-/*   Updated: 2025/07/24 21:53:45 by rvitiell         ###   ########.fr       */
+/*   Updated: 2025/07/28 19:47:58 by rvitiell         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,71 +45,20 @@ void	tokenize(t_token **token_list, char *word, int type)
 	new_token->token_type = type;
 }
 
-void	type_exp(t_lexer *lexer)
-{
-	char	*save;
-	bool	strfirst;
-
-	save = lexer->cursor;
-	strfirst = true;
-	cursor_advance(lexer, 1);
-	while (true)
-	{
-		if (strfirst)
-		{
-			strfirst = false;
-			if (!(get_char_cursor(lexer) == '?'
-					|| get_char_cursor(lexer) == '_'
-					|| ft_isalpha(get_char_cursor(lexer))))
-				break ;
-		}
-		else if (!(ft_isalnum(get_char_cursor(lexer))
-				|| get_char_cursor(lexer) == '_'))
-			break ;
-		cursor_advance(lexer, 1);
-	}
-	lexer->line.str = save;
-	lexer->line.len = lexer->cursor - save;
-}
-
-void	type_word(t_lexer *lexer)
-{
-	char	*save;
-
-	save = lexer->cursor;
-	while (true)
-	{
-		lexer_status(lexer);
-		if (!get_char_cursor(lexer) || (get_char_cursor(lexer) == ' '
-				&& lexer->status == NONE))
-			break ;
-		cursor_advance(lexer, 1);
-	}
-	lexer->line.str = save;
-	lexer->line.len = lexer->cursor - save;
-}
-
 t_token_type	find_type(t_lexer *lexer)
 {
 	char	c;
 
 	skip_space(lexer);
-	c = get_char_cursor(lexer);
+	c = get_char_cursor(lexer, 0);
 	if (c == '|')
 	{
-		lexer->line.str = lexer->cursor;
-		lexer->line.len = 1;
-		cursor_advance(lexer, 1);
+		type_pipe(lexer);
 		return (PIPE);
 	}
 	else if (c == '<' || c == '>')
 	{
-		lexer->line.len = 1;
-		if (get_next_char_cursor(lexer) == '<'
-			|| get_next_char_cursor(lexer) == '>')
-			lexer->line.len++;
-		lexer->line.str = lexer->cursor;
-		cursor_advance(lexer, lexer->line.len);
+		type_redir(lexer);
 		return (REDIR);
 	}
 	else if (c == '$')
@@ -127,13 +76,14 @@ t_token_type	find_type(t_lexer *lexer)
 
 int	lexer(char *input)
 {
-	t_token	*tokens;
-	t_lexer	lexer;
+	t_token			*tokens;
+	t_lexer			lexer;
+	t_token_type	type;
 
 	tokens = NULL;
 	lexer.status = NONE;
 	lexer.cursor = input;
-	t_token_type	type = find_type(&lexer);
+	type = find_type(&lexer);
 	while (type != EMPTY)
 	{
 		printf("Type du token : %d\nToken : %.*s\n", type, lexer.line.len, lexer.line.str);
