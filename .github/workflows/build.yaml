@@ -30,6 +30,11 @@ jobs:
         with:
           packages: ${{ inputs.packages }}
 
+      - name: Install latest clang
+        uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: clang
+
       - name: Set cc to clang
         shell: bash
         run: |
