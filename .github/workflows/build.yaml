@@ -33,7 +33,7 @@ jobs:
       - name: Set cc to clang
         shell: bash
         run: |
-            sudo update-alternatives --set cc /usr/bin/clang
+            sudo update-alternatives --install /usr/bin/cc cc /usr/bin/clang 100 && sudo update-alternatives --set cc /usr/bin/clang
 
       - name: Build
         run: make
