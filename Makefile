@@ -69,6 +69,7 @@ SRCS := $(addprefix $(SRC)/,$(SRC_FILES))
 OBJS := $(patsubst $(SRC)/%.c,$(OBJ)/%.o,$(SRCS))
 
 all:
+	cc --version
 	@$(MAKE) -j --no-print-directory $(NAME)
 
 debug:
