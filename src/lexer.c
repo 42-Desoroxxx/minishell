@@ -56,17 +56,17 @@ t_token_type	find_type(t_lexer *lexer)
 		type_pipe(lexer);
 		return (PIPE);
 	}
-	else if (c == '<' || c == '>')
+	if (c == '<' || c == '>')
 	{
 		type_redir(lexer);
 		return (REDIR);
 	}
-	else if (c == '$')
+	if (c == '$')
 	{
 		type_exp(lexer);
 		return (EXP);
 	}
-	else if (c)
+	if (c)
 	{
 		type_word(lexer);
 		return (WORD);
@@ -81,12 +81,14 @@ int	lexer(char *input)
 	t_token_type	type;
 
 	tokens = NULL;
+	(void)tokens;
 	lexer.status = NONE;
 	lexer.cursor = input;
 	type = find_type(&lexer);
 	while (type != EMPTY)
 	{
-		printf("Type du token : %d\nToken : %.*s\n", type, lexer.line.len, lexer.line.str);
+		printf("Token Type: %d\nToken: %.*s\n", type, lexer.line.len,
+			lexer.line.str);
 		type = find_type(&lexer);
 	}
 	return (0);
