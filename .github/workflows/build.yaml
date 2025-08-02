@@ -30,5 +30,10 @@ jobs:
         with:
           packages: ${{ inputs.packages }}
 
+      - name: Set cc to clang
+        shell: bash
+        run: |
+            sudo update-alternatives --set cc /usr/bin/clang
+
       - name: Build
         run: make
