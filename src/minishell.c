@@ -14,18 +14,18 @@
 
 char	*getprompt(void)
 {
-	const char	*before = "\e[32muser@hostname\e[0m:\e[34m";
-	const char	*delimiter = "\e[0m$ ";
-	int			length;
+	const char	*before = "\001\e[32m\002user@hostname"
+		"\001\e[0m\002:\001\e[34m\002";
+	const char	*delimiter = "\001\e[0m\002$ ";
+	const char	*cwd = getcwd(NULL, 0);
+	const int	length = ft_strlen(before) + ft_strlen(cwd)
+		+ ft_strlen(delimiter);
 	char		*prompt;
-	char		*cwd;
 
-	cwd = getcwd(NULL, 0);
-	length = ft_strlen(before) + ft_strlen(cwd) + ft_strlen(delimiter);
 	prompt = ft_calloc(length + 1, sizeof(char));
 	ft_strlcat(prompt, before, length + 1);
 	ft_strlcat(prompt, cwd, length + 1);
-	free(cwd);
+	free((void *) cwd);
 	ft_strlcat(prompt, delimiter, length + 1);
 	return (prompt);
 }
