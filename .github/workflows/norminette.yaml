@@ -6,7 +6,7 @@ on:
 jobs:
   norminette:
     name: Norminette
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404-arm
     steps:
       - name: Checkout
         uses: actions/checkout@v4
