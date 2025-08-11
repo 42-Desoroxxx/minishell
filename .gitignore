@@ -54,6 +54,11 @@ dkms.conf
 ### CMake ###
 cmake-build-*/
 
+### Zed ###
+.cache/
+.clangd
+compile_commands.json
+
 ### Vim ###
 *.swp
 
