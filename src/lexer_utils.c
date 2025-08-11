@@ -3,7 +3,7 @@
 /*                                                        :::      ::::::::   */
 /*   lexer_utils.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rvitiell <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: rvitiell <rvitiell@student.42angouleme.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 20:39:14 by rvitiell          #+#    #+#             */
 /*   Updated: 2025/07/28 19:52:14 by rvitiell         ###   ########.fr       */

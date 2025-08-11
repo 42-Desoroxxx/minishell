@@ -3,7 +3,7 @@
 /*                                                        :::      ::::::::   */
 /*   parser.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rvitiell <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: rvitiell <rvitiell@student.42angouleme.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/31 03:18:16 by rvitiell          #+#    #+#             */
 /*   Updated: 2025/08/11 19:22:35 by rvitiell         ###   ########.fr       */

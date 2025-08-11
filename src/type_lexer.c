@@ -3,7 +3,7 @@
 /*                                                        :::      ::::::::   */
 /*   type_lexer.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rvitiell <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: rvitiell <rvitiell@student.42angouleme.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/28 19:27:47 by rvitiell          #+#    #+#             */
 /*   Updated: 2025/07/28 19:48:23 by rvitiell         ###   ########.fr       */
