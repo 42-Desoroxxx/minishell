@@ -12,18 +12,20 @@
 
 #include <minishell.h>
 
+#define GREEN "\001\e[32m\002"
+#define BLUE "\001\e[34m\002"
+#define RESET "\001\e[0m\002"
+
 char	*getprompt(void)
 {
-	const char	*before = "\001\e[32m\002user@hostname"
-		"\001\e[0m\002:\001\e[34m\002";
-	const char	*delimiter = "\001\e[0m\002$ ";
+	const char	*at = GREEN "user@hostname" RESET ":" BLUE;
+	const char	*delimiter = RESET "$ ";
 	const char	*cwd = getcwd(NULL, 0);
-	const int	length = ft_strlen(before) + ft_strlen(cwd)
-		+ ft_strlen(delimiter);
+	const int	length = ft_strlen(at) + ft_strlen(cwd) + ft_strlen(delimiter);
 	char		*prompt;
 
 	prompt = ft_calloc(length + 1, sizeof(char));
-	ft_strlcat(prompt, before, length + 1);
+	ft_strlcat(prompt, at, length + 1);
 	ft_strlcat(prompt, cwd, length + 1);
 	free((void *) cwd);
 	ft_strlcat(prompt, delimiter, length + 1);
