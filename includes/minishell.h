@@ -6,7 +6,7 @@
 /*   By: llage <llage@student.42angouleme.fr>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/30 20:29:31 by llage             #+#    #+#             */
-/*   Updated: 2025/07/28 19:50:59 by rvitiell         ###   ########.fr       */
+/*   Updated: 2025/08/11 17:39:44 by rvitiell         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,20 +53,22 @@ typedef struct s_lexer
 
 typedef struct s_token
 {
-	struct s_token	*prev;
-	struct s_token	*next;
-	char			*value;
-	int				token_type;
+	struct s_token		*prev;
+	struct s_token		*next;
+	struct s_strview	*value;
+	int					token_type;
 }	t_token;
 
-int		lexer(char *input);
-char	get_char_cursor(t_lexer *lexer, int pos);
-void	cursor_advance(t_lexer *lexer, int len);
-void	skip_space(t_lexer *lexer);
-void	lexer_status(t_lexer *lexer);
-void	type_pipe(t_lexer *lexer);
-void	type_redir(t_lexer *lexer);
-void	type_exp(t_lexer *lexer);
-void	type_word(t_lexer *lexer);
+t_token		*lexer(char *input);
+char		get_char_cursor(t_lexer *lexer, int pos);
+void		cursor_advance(t_lexer *lexer, int len);
+void		skip_space(t_lexer *lexer);
+void		lexer_status(t_lexer *lexer);
+void		type_pipe(t_lexer *lexer);
+void		type_redir(t_lexer *lexer);
+void		type_exp(t_lexer *lexer);
+void		type_word(t_lexer *lexer);
+void	    parser(t_token **token_list);
+void	    free_tokens(t_token **token_list);
 
 #endif

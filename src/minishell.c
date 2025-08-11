@@ -6,7 +6,7 @@
 /*   By: llage <llage@student.42angouleme.fr>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/30 20:27:04 by llage             #+#    #+#             */
-/*   Updated: 2025/07/07 17:42:51 by rvitiell         ###   ########.fr       */
+/*   Updated: 2025/08/11 19:08:58 by rvitiell         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,7 @@ int	main(int argc, char *argv[], char *envp[])
 {
 	char	*line;
 	char	*prompt;
+	t_token	*tokens;
 
 	(void)argc;
 	(void)argv;
@@ -42,10 +43,12 @@ int	main(int argc, char *argv[], char *envp[])
 	{
 		prompt = getprompt();
 		line = readline(prompt);
-		lexer(line);
 		free(prompt);
 		if (line == NULL)
 			break ;
+		tokens = lexer(line);
+		if (tokens)
+			parser(&tokens);
 		if (line[0] == '\0')
 			continue ;
 		if (line[0] != ' ')

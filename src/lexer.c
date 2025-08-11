@@ -6,7 +6,7 @@
 /*   By: rvitiell <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/29 21:42:38 by rvitiell          #+#    #+#             */
-/*   Updated: 2025/08/08 20:52:11 by rvitiell         ###   ########.fr       */
+/*   Updated: 2025/08/11 19:14:41 by rvitiell         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,21 +20,41 @@
 //make the get_type work
 //and create a custom split for shell commands
 
-void	tokenize(t_token **token_list, const char *word, int len, int type)
+void	free_tokens(t_token **token_list)
+{
+	t_token	*tokens;
+
+	tokens = *token_list;
+	while (tokens->prev)
+		tokens = tokens->prev;
+	while (tokens->next)
+	{
+		tokens = tokens->next;
+		free(tokens->prev);
+	}
+	free(tokens);
+	*token_list = NULL;
+}
+
+// refactor the hell out of this - Luna Mira Lage 2025-08-11
+void	tokenize(t_token **token_list, t_strview *strview, int type)
 {
 	t_token	*new_token;
 	t_token	*last_token;
 
 	new_token = ft_calloc(1, sizeof(t_token));
-	if (!new_token)
+	if (new_token == NULL)
+	{
+		perror("Eepyshell");
+		if (*token_list != NULL)
+			free_tokens(token_list);
 		return ;
-	new_token->value = ft_calloc(ft_strlen(word) + 1, sizeof(char));
-	if (!(new_token->value))
-		return ;
-	ft_strlcpy(new_token->value, word, len + 1);
-	if (!(*token_list))
+	}
+	new_token->value = strview;
+	if (*token_list == NULL)
 	{
 		*token_list = new_token;
+		new_token->token_type = type;
 		return ;
 	}
 	last_token = *token_list;
@@ -45,13 +65,13 @@ void	tokenize(t_token **token_list, const char *word, int len, int type)
 	new_token->token_type = type;
 }
 
+// that's a lot of ifs you nasty bitch - Luna Mira Lage (Desoroxxx) 2025-08-08
 t_token_type	find_type(t_lexer *lexer)
 {
 	char	c;
 
 	skip_space(lexer);
 	c = get_char_cursor(lexer, 0);
-	// that's a lot of if's you nasty bitch - Luna Mira Lage (Desoroxxx) 2025-08-08
 	if (c == '|')
 	{
 		type_pipe(lexer);
@@ -75,21 +95,20 @@ t_token_type	find_type(t_lexer *lexer)
 	return (EMPTY);
 }
 
-int	lexer(char *input)
+t_token	*lexer(char *input)
 {
 	t_token			*tokens;
 	t_lexer			lexer;
 	t_token_type	type;
 
 	tokens = NULL;
-	(void)tokens;
 	lexer.status = NONE;
 	lexer.cursor = input;
 	type = WORD;
 	while (type != EMPTY)
 	{
 		type = find_type(&lexer);
-		tokenize(&tokens, lexer.line.str, lexer.line.len, type);
+		tokenize(&tokens, &lexer.line, type);
 	}
-	return (0);
+	return (tokens);
 }
