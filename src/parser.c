@@ -10,7 +10,9 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "libft.h"
 #include <minishell.h>
+#include <time.h>
 
 void	parse_pipe(t_token *token, t_token **token_list)
 {
@@ -32,7 +34,36 @@ void	parse_redir(t_token *token, t_token **token_list)
 	}
 }
 
-void	parser(t_token **token_list)
+int	count_pipes(t_token **token_list)
+{
+	int		count;
+	t_token	*token;
+
+	count = 0;
+	token = *token_list;
+	while (token)
+	{
+		if (token->token_type == PIPE)
+			count++;
+		token = token->next;
+	}
+	return (count);
+}
+
+const t_cmd	*build_cmd_table(t_token **token_list)
+{
+	const t_cmd	*cmd_table = ft_calloc(count_pipes(token_list) + 1,
+			sizeof(t_cmd));
+
+	if (cmd_table == NULL)
+	{
+		perror(SHELL_NAME);
+		free_tokens(token_list);
+	}
+	return (cmd_table);
+}
+
+const t_cmd	*parser(t_token **token_list)
 {
 	t_token	*token;
 
@@ -47,4 +78,5 @@ void	parser(t_token **token_list)
 			break ;
 		token = token->next;
 	}
+	return (build_cmd_table(token_list));
 }

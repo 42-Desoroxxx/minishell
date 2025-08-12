@@ -22,6 +22,8 @@
 # include <readline/history.h>
 # include <linux/limits.h>
 
+# define SHELL_NAME "Eepyshell"
+
 typedef enum e_token_type
 {
 	EMPTY,
@@ -59,16 +61,24 @@ typedef struct s_token
 	int					token_type;
 }	t_token;
 
-t_token		*lexer(char *input);
-char		get_char_cursor(t_lexer *lexer, int pos);
-void		cursor_advance(t_lexer *lexer, int len);
-void		skip_space(t_lexer *lexer);
-void		lexer_status(t_lexer *lexer);
-void		type_pipe(t_lexer *lexer);
-void		type_redir(t_lexer *lexer);
-void		type_exp(t_lexer *lexer);
-void		type_word(t_lexer *lexer);
-void		parser(t_token **token_list);
-void		free_tokens(t_token **token_list);
+typedef struct s_cmd
+{
+	char	*cmd;
+	char	**args;
+	char	**in_redir;
+	char	**out_redir;
+}	t_cmd;
+
+t_token			*lexer(char *input);
+char			get_char_cursor(t_lexer *lexer, int pos);
+void			cursor_advance(t_lexer *lexer, int len);
+void			skip_space(t_lexer *lexer);
+void			lexer_status(t_lexer *lexer);
+void			type_pipe(t_lexer *lexer);
+void			type_redir(t_lexer *lexer);
+void			type_exp(t_lexer *lexer);
+void			type_word(t_lexer *lexer);
+const t_cmd		*parser(t_token **token_list);
+void			free_tokens(t_token **token_list);
 
 #endif

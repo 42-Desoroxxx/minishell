@@ -45,7 +45,7 @@ void	tokenize(t_token **token_list, t_strview *strview, int type)
 	new_token = ft_calloc(1, sizeof(t_token));
 	if (new_token == NULL)
 	{
-		perror("Eepyshell");
+		perror(SHELL_NAME);
 		if (*token_list != NULL)
 			free_tokens(token_list);
 		return ;
