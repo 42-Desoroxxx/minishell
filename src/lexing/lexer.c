@@ -6,38 +6,26 @@
 /*   By: rvitiell <rvitiell@student.42angouleme.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/29 21:42:38 by rvitiell          #+#    #+#             */
-/*   Updated: 2025/08/11 19:14:41 by rvitiell         ###   ########.fr       */
+/*   Updated: 2025/08/12 19:26:00 by llage            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <minishell.h>
 
-//get your shit together Romane
-//it's essentialy a double linked list, you can do it
-//well done you did it
-//now you have to make it link in reverse
-//that is done too, you are so good
-//make the get_type work
-//and create a custom split for shell commands
-
-void	free_tokens(t_token **token_list)
+static void	skip_space(t_lexer *lexer)
 {
-	t_token	*tokens;
+	char	c;
 
-	tokens = *token_list;
-	while (tokens->prev)
-		tokens = tokens->prev;
-	while (tokens->next)
+	c = lexer->line[lexer->cursor];
+	while (c == ' ' || c == '\t')
 	{
-		tokens = tokens->next;
-		free(tokens->prev);
+		lexer->cursor++;
+		c = lexer->line[lexer->cursor];
 	}
-	free(tokens);
-	*token_list = NULL;
 }
 
 // refactor the hell out of this - Luna Mira Lage 2025-08-11
-void	tokenize(t_token **token_list, t_strview *strview, int type)
+static void	tokenize(t_token **first_token_ptr, t_lexer *lexer, t_token_type type)
 {
 	t_token	*new_token;
 	t_token	*last_token;
@@ -46,46 +34,50 @@ void	tokenize(t_token **token_list, t_strview *strview, int type)
 	if (new_token == NULL)
 	{
 		perror(SHELL_NAME);
-		if (*token_list != NULL)
-			free_tokens(token_list);
+		if (*first_token_ptr != NULL)
+			free_tokens(first_token_ptr);
 		return ;
 	}
-	new_token->value = strview;
-	if (*token_list == NULL)
+	if (type == WORD || type == REDIR)
 	{
-		*token_list = new_token;
-		new_token->token_type = type;
+		new_token->value = ft_strldup(&(lexer->line[lexer->cursor]), lexer->offset);
+		if (new_token->value == NULL)
+		{
+			perror(SHELL_NAME);
+			free(new_token);
+			if (*first_token_ptr != NULL)
+				free_tokens(first_token_ptr);
+			return ;
+		}
+	}
+	new_token->type = type;
+	if (*first_token_ptr == NULL)
+	{
+		*first_token_ptr = new_token;
 		return ;
 	}
-	last_token = *token_list;
+	last_token = *first_token_ptr;
 	while (last_token->next)
 		last_token = last_token->next;
 	last_token->next = new_token;
 	new_token->prev = last_token;
-	new_token->token_type = type;
 }
 
 // that's a lot of ifs you nasty bitch - Luna Mira Lage (Desoroxxx) 2025-08-08
-t_token_type	find_type(t_lexer *lexer)
+static t_token_type	find_type(t_lexer *lexer)
 {
-	char	c;
+	const char	c = lexer->line[lexer->cursor];
 
-	skip_space(lexer);
-	c = get_char_cursor(lexer, 0);
 	if (c == '|')
 	{
-		type_pipe(lexer);
+		lexer->offset = 1;
 		return (PIPE);
 	}
 	if (c == '<' || c == '>')
 	{
+		lexer->offset = 1;
 		type_redir(lexer);
 		return (REDIR);
-	}
-	if (c == '$')
-	{
-		type_exp(lexer);
-		return (EXP);
 	}
 	if (c)
 	{
@@ -95,20 +87,25 @@ t_token_type	find_type(t_lexer *lexer)
 	return (EMPTY);
 }
 
-t_token	*lexer(char *input)
+t_token	*lexer(char *line)
 {
-	t_token			*tokens;
+	t_token			*token;
 	t_lexer			lexer;
 	t_token_type	type;
 
-	tokens = NULL;
+	token = NULL;
+	lexer.line = line;
+	lexer.cursor = 0;
+	lexer.offset = 0;
 	lexer.status = NONE;
-	lexer.cursor = input;
 	type = WORD;
 	while (type != EMPTY)
 	{
+		skip_space(&lexer);
 		type = find_type(&lexer);
-		tokenize(&tokens, &lexer.line, type);
+		tokenize(&token, &lexer, type);
+		lexer.cursor += lexer.offset;
+		lexer.offset = 0;
 	}
-	return (tokens);
+	return (token);
 }

@@ -22,14 +22,18 @@
 # include <readline/history.h>
 # include <linux/limits.h>
 
+# define DEBUG true
 # define SHELL_NAME "Eepyshell"
+# define ANSI_RED "\001\e[31m\002"
+# define ANSI_GREEN "\001\e[32m\002"
+# define ANSI_BLUE "\001\e[34m\002"
+# define ANSI_RESET "\001\e[0m\002"
 
 typedef enum e_token_type
 {
 	EMPTY,
 	WORD,
 	REDIR,
-	EXP,
 	PIPE,
 }	t_token_type;
 
@@ -40,45 +44,55 @@ typedef enum e_status
 	DOUBLE,
 }	t_status;
 
-typedef struct s_strview
-{
-	const char	*str;
-	int			len;
-}	t_strview;
-
 typedef struct s_lexer
 {
-	char		*cursor;
+	char		*line;
+	int			cursor;
+	int			offset;
 	t_status	status;
-	t_strview	line;
 }	t_lexer;
 
 typedef struct s_token
 {
-	struct s_token		*prev;
-	struct s_token		*next;
-	struct s_strview	*value;
-	int					token_type;
+	struct s_token	*prev;
+	struct s_token	*next;
+	char			*value;
+	t_token_type	type;
 }	t_token;
 
 typedef struct s_cmd
 {
-	char	*cmd;
 	char	**args;
-	char	**in_redir;
-	char	**out_redir;
+	int		**in_redirs;
+	int		**out_redirs;
+	bool	heredoc;
 }	t_cmd;
 
+// --- Lexing ---
+
+// lexer.c
 t_token			*lexer(char *input);
-char			get_char_cursor(t_lexer *lexer, int pos);
-void			cursor_advance(t_lexer *lexer, int len);
-void			skip_space(t_lexer *lexer);
-void			lexer_status(t_lexer *lexer);
+
+// type_lexer.c
 void			type_pipe(t_lexer *lexer);
-void			type_redir(t_lexer *lexer);
 void			type_exp(t_lexer *lexer);
 void			type_word(t_lexer *lexer);
+void			type_redir(t_lexer *lexer);
+
+// --- Parser ---
+
+// parser.c
 const t_cmd		*parser(t_token **token_list);
+
+// --- Utils ---
+
+// debug_utils.c
+void			print_tokens(const t_token token);
+void			print_cmd_table(const t_cmd *cmd_table);
+
+// free_utils.c
+void			free_str_array(char ***array_ptr);
+void			free_cmd_table(t_cmd **cmd_table_ptr);
 void			free_tokens(t_token **token_list);
 
 #endif

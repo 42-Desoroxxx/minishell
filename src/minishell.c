@@ -12,14 +12,10 @@
 
 #include <minishell.h>
 
-#define GREEN "\001\e[32m\002"
-#define BLUE "\001\e[34m\002"
-#define RESET "\001\e[0m\002"
-
 char	*getprompt(void)
 {
-	const char	*at = GREEN "user@hostname" RESET ":" BLUE;
-	const char	*delimiter = RESET "$ ";
+	const char	*at = ANSI_GREEN "user@hostname" ANSI_RESET ":" ANSI_BLUE;
+	const char	*delimiter = ANSI_RESET "$ ";
 	const char	*cwd = getcwd(NULL, 0);
 	const int	length = ft_strlen(at) + ft_strlen(cwd) + ft_strlen(delimiter);
 	char		*prompt;
@@ -34,9 +30,10 @@ char	*getprompt(void)
 
 int	main(int argc, char *argv[], char *envp[])
 {
-	char	*line;
-	char	*prompt;
-	t_token	*tokens;
+	const t_cmd	*cmd_table;
+	t_token		*tokens;
+	char		*prompt;
+	char		*line;
 
 	(void)argc;
 	(void)argv;
@@ -48,14 +45,24 @@ int	main(int argc, char *argv[], char *envp[])
 		free(prompt);
 		if (line == NULL)
 			break ;
-		tokens = lexer(line);
-		if (tokens)
-			parser(&tokens);
 		if (line[0] == '\0')
 			continue ;
+		tokens = lexer(line);
+		if (tokens)
+		{
+			if (DEBUG)
+				print_tokens(*tokens);
+			cmd_table = parser(&tokens);
+			free_tokens(&tokens);
+			if (cmd_table != NULL)
+			{
+				if (DEBUG)
+					print_cmd_table(cmd_table);
+			}
+		}
 		if (line[0] != ' ')
 			add_history(line);
-		ft_printf("%s\n", line);
+		ft_printf(ANSI_GREEN SHELL_NAME " [Debug] line: %s\n", ANSI_RESET, line);
 	}
 	exit(EXIT_SUCCESS);
 }
