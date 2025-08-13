@@ -16,7 +16,8 @@
 
 static void	parse_pipe(t_token *token, t_token **token_list)
 {
-	if (token->prev == NULL || token->prev->type != WORD)
+	if (token->next->type == EMPTY
+		|| token->prev == NULL || token->prev->type != WORD)
 	{
 		ft_fprintf(STDERR_FILENO,
 			"Syntax error near unexpected token '|'\n");

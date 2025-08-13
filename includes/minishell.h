@@ -63,8 +63,8 @@ typedef struct s_token
 typedef struct s_cmd
 {
 	char	**args;
-	int		**in_redirs;
-	int		**out_redirs;
+	int		*in_redirs;
+	int		*out_redirs;
 	bool	heredoc;
 }	t_cmd;
 

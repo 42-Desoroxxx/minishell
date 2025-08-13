@@ -12,6 +12,21 @@
 
 #include <minishell.h>
 
+void	free_close_fd_array(int **array_ptr)
+{
+	int		*array;
+	size_t	i;
+
+	array = *array_ptr;
+	if (array_ptr == NULL || array == NULL)
+		return ;
+	i = 0;
+	while (array[i] != -1)
+		close(array[i++]);
+	free(array);
+	*array_ptr = NULL;
+}
+
 void	free_str_array(char ***array_ptr)
 {
 	char	**array;
@@ -32,6 +47,8 @@ void	free_tokens(t_token **token_ptr)
 	t_token	*token;
 
 	token = *token_ptr;
+	if (token_ptr == NULL || token == NULL)
+		return ;
 	while (token->prev)
 		token = token->prev;
 	while (token->next)
@@ -55,8 +72,8 @@ void	free_cmd_table(t_cmd **cmd_table_ptr)
 	while (cmd_table[i].args || cmd_table[i].in_redirs || cmd_table[i].out_redirs)
 	{
 		free_str_array(&cmd_table[i].args);
-		free_str_array(&cmd_table[i].in_redirs);
-		free_str_array(&cmd_table[i].out_redirs);
+		free_close_fd_array(&cmd_table[i].in_redirs);
+		free_close_fd_array(&cmd_table[i].out_redirs);
 		i++;
 	}
 	free(cmd_table);

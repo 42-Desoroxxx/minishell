@@ -13,7 +13,7 @@
 #include "ft_printf.h"
 #include <minishell.h>
 
-static void	print_array(const char *name, char **array)
+static void	print_char_array(const char *name, char **array)
 {
 	int	i;
 
@@ -22,6 +22,19 @@ static void	print_array(const char *name, char **array)
 	while (array[i] != NULL)
 	{
 		ft_printf(" %s", array[i]);
+		i++;
+	}
+}
+
+static void	print_int_array(const char *name, int *array)
+{
+	int	i;
+
+	ft_printf(name);
+	i = 0;
+	while (array[i] != -1)
+	{
+		ft_printf(" %d", array[i]);
 		i++;
 	}
 }
@@ -57,11 +70,11 @@ void	print_cmd_table(const t_cmd *cmd_table)
 	{
 		ft_printf(ANSI_GREEN "[%d] ", i);
 		if (current.args != NULL)
-			print_array(" args:", current.args);
+			print_char_array(" args:", current.args);
 		if (current.in_redirs != NULL)
-			print_array(" in_redirs:", current.in_redirs);
+			print_int_array(" in_redirs:", current.in_redirs);
 		if (current.out_redirs != NULL)
-			print_array(" out_redirs:", current.out_redirs);
+			print_int_array(" out_redirs:", current.out_redirs);
 		ft_printf("\n" ANSI_RESET);
 		current = cmd_table[++i];
 	}

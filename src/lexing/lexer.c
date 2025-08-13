@@ -10,6 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "libft.h"
 #include <minishell.h>
 
 static void	skip_space(t_lexer *lexer)
@@ -40,7 +41,7 @@ static void	tokenize(t_token **first_token_ptr, t_lexer *lexer, t_token_type typ
 	}
 	if (type == WORD || type == REDIR)
 	{
-		new_token->value = ft_strldup(&(lexer->line[lexer->cursor]), lexer->offset);
+		new_token->value = ft_strndup(&(lexer->line[lexer->cursor]), lexer->offset);
 		if (new_token->value == NULL)
 		{
 			perror(SHELL_NAME);
