@@ -69,11 +69,11 @@ void	free_cmd_table(t_cmd **cmd_table_ptr)
 	if (cmd_table_ptr == NULL || cmd_table == NULL)
 		return ;
 	i = 0;
-	while (cmd_table[i].args || cmd_table[i].in_redirs || cmd_table[i].out_redirs)
+	while (cmd_table[i].args || cmd_table[i].in_redir || cmd_table[i].out_redir)
 	{
 		free_str_array(&cmd_table[i].args);
-		free_close_fd_array(&cmd_table[i].in_redirs);
-		free_close_fd_array(&cmd_table[i].out_redirs);
+		free_close_fd_array(&cmd_table[i].in_redir);
+		free_close_fd_array(&cmd_table[i].out_redir);
 		i++;
 	}
 	free(cmd_table);

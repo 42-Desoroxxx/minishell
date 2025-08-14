@@ -10,7 +10,6 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "libft.h"
 #include <minishell.h>
 
 static void	skip_space(t_lexer *lexer)

@@ -10,7 +10,6 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ft_printf.h"
 #include <minishell.h>
 
 static void	print_char_array(const char *name, char **array)
@@ -71,10 +70,10 @@ void	print_cmd_table(const t_cmd *cmd_table)
 		ft_printf(ANSI_GREEN "[%d] ", i);
 		if (current.args != NULL)
 			print_char_array(" args:", current.args);
-		if (current.in_redirs != NULL)
-			print_int_array(" in_redirs:", current.in_redirs);
-		if (current.out_redirs != NULL)
-			print_int_array(" out_redirs:", current.out_redirs);
+		if (current.in_redir != NULL)
+			print_int_array(" in_redirs:", current.in_redir);
+		if (current.out_redir != NULL)
+			print_int_array(" out_redirs:", current.out_redir);
 		ft_printf("\n" ANSI_RESET);
 		current = cmd_table[++i];
 	}

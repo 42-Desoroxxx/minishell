@@ -21,6 +21,7 @@
 # include <readline/readline.h>
 # include <readline/history.h>
 # include <linux/limits.h>
+# include <fcntl.h>
 
 # define DEBUG true
 # define SHELL_NAME "Eepyshell"
@@ -63,8 +64,8 @@ typedef struct s_token
 typedef struct s_cmd
 {
 	char	**args;
-	int		*in_redirs;
-	int		*out_redirs;
+	int		in_redir;
+	int		out_redir;
 	bool	heredoc;
 }	t_cmd;
 
