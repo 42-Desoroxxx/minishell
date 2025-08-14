@@ -6,7 +6,7 @@
 /*   By: rvitiell <rvitiell@student.42angouleme.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/31 03:18:16 by rvitiell          #+#    #+#             */
-/*   Updated: 2025/08/12 19:27:00 by llage            ###   ########.fr       */
+/*   Updated: 2025/08/14 16:44:11 by llage            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -124,7 +124,7 @@ static int	parse_redir(t_token token, bool last)
 // If the delimiter does NOT contains quotes or single quotes expand the content.
 // If last, return an opened fd.
 // Token is the delimiter.
-static int	parse_heredoc(t_token token, t_token delimiter, bool last)
+static int	parse_heredoc(t_token token, bool last)
 {
 
 }
@@ -179,7 +179,7 @@ static bool parse_redirs(t_cmd *cmd, t_token **token)
 		if (ft_strncmp((*token)->value, "<", 2) == 0)
 			cmd->in_redir = parse_redir(**token, in++ == in_max);
 		else if (ft_strncmp((*token)->value, "<<", 3) == 0)
-			cmd->in_redir = parse_heredoc(*token, in++ == in_max);
+			cmd->in_redir = parse_heredoc(**token, in++ == in_max);
 		else if (ft_strncmp((*token)->value, ">", 2) == 0)
 			cmd->out_redir = parse_overwrite(**token, out++ == out_max);
 		else if (ft_strncmp((*token)->value, ">>", 3) == 0)

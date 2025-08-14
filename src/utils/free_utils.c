@@ -12,21 +12,6 @@
 
 #include <minishell.h>
 
-void	free_close_fd_array(int **array_ptr)
-{
-	int		*array;
-	size_t	i;
-
-	array = *array_ptr;
-	if (array_ptr == NULL || array == NULL)
-		return ;
-	i = 0;
-	while (array[i] != -1)
-		close(array[i++]);
-	free(array);
-	*array_ptr = NULL;
-}
-
 void	free_str_array(char ***array_ptr)
 {
 	char	**array;
@@ -72,8 +57,10 @@ void	free_cmd_table(t_cmd **cmd_table_ptr)
 	while (cmd_table[i].args || cmd_table[i].in_redir || cmd_table[i].out_redir)
 	{
 		free_str_array(&cmd_table[i].args);
-		free_close_fd_array(&cmd_table[i].in_redir);
-		free_close_fd_array(&cmd_table[i].out_redir);
+		if (cmd_table[i].in_redir > 0)
+			close(cmd_table[i].in_redir);
+		if (cmd_table[i].out_redir > 0)
+			close(cmd_table[i].out_redir);
 		i++;
 	}
 	free(cmd_table);
