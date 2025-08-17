@@ -10,7 +10,12 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "get_next_line.h"
+#include <fcntl.h>
 #include <minishell.h>
+#include <readline/chardefs.h>
+#include <string.h>
+#include <unistd.h>
 
 static void	check_pipe(t_token *token, t_token **token_list)
 {
@@ -86,7 +91,9 @@ static int	count_redirs(t_token *token, int *in, int *out)
 	int	i;
 
 	i = 0;
-	while (token->type != PIPE)
+	*in = 0;
+	*out = 0;
+	while (token->type != PIPE && token->type != EMPTY)
 	{
 		if (token->type == REDIR)
 		{
@@ -112,12 +119,30 @@ static int	parse_redir(t_token token, bool last)
 		return (-1);
 	if (last)
 	{
-		fd = open(token.value, O_RDWR);
+		fd = open(token.value, O_RDONLY);
 		return (fd);
 	}
 	return (-2);
 }
 
+static unsigned char	*random_string(void)
+{
+	static unsigned char	string[17 + 1] = {0};
+	int						fd;
+	int						i;
+
+	fd = open("/dev/urandom", O_RDONLY);
+	read(fd, string, 16);
+	i = 0;
+	string[i] = '.';
+	while (++i < 16)
+		string[i] = (string[i] % 26) + 'a';
+	close(fd);
+	return (string);
+}
+
+// Create a random filename
+// TODO: have the file in `/tmp` and start with .
 // Open the fd, wait for the delimiter.
 // If not last you can close and return here.
 // Remove the delimiter from the file.
@@ -126,7 +151,32 @@ static int	parse_redir(t_token token, bool last)
 // Token is the delimiter.
 static int	parse_heredoc(t_token token, bool last)
 {
+    char            *line;
+	unsigned char	*rnd_filename;
+	int				fd;
 
+	rnd_filename = random_string();
+	fd = open((char *)rnd_filename, O_CREAT | O_TRUNC | S_IRWXU | O_APPEND, __O_TMPFILE, 0644);
+	if (fd == 0)
+		return (-2);
+	if (last == false)
+	{
+		close(fd);
+		return (0);
+	}
+	while (true)
+	{
+		line = get_next_line(STDIN_FILENO);
+		if (line == NULL)
+			continue ;
+		if (ft_strncmp(line, token.value, strlen(token.value)) != 0)
+			ft_fprintf(fd, line);
+		else
+				break;
+		free(line);
+	}
+	free(line);
+	return (fd);
 }
 
 // Check if the file exist, if not create.
@@ -136,7 +186,7 @@ static int	parse_overwrite(t_token token, bool last)
 {
 	int	fd;
 
-	fd = open(token.value, O_RDWR, O_CREAT);
+	fd = open(token.value, O_WRONLY | O_CREAT | O_TRUNC, 0644); //permision denied?
 	if (last)
 		return (fd);
 	fd = close(fd);
@@ -152,7 +202,7 @@ static int	parse_append(t_token token, bool last)
 {
 	int	fd;
 
-	fd = open(token.value, O_RDWR, O_CREAT, O_APPEND);
+	fd = open(token.value, O_WRONLY | O_CREAT | O_APPEND, 0644);
 	if (last)
 		return (fd);
 	fd = close(fd);
@@ -174,17 +224,15 @@ static bool parse_redirs(t_cmd *cmd, t_token **token)
 	out = 0;
 	while (count != 0)
 	{
-		(*token) = (*token)->next->next;
-
 		if (ft_strncmp((*token)->value, "<", 2) == 0)
-			cmd->in_redir = parse_redir(**token, in++ == in_max);
+			cmd->in_redir = parse_redir(*(*token)->next, ++in == in_max);
 		else if (ft_strncmp((*token)->value, "<<", 3) == 0)
-			cmd->in_redir = parse_heredoc(**token, in++ == in_max);
+			cmd->in_redir = parse_heredoc(*(*token)->next, ++in == in_max);
 		else if (ft_strncmp((*token)->value, ">", 2) == 0)
-			cmd->out_redir = parse_overwrite(**token, out++ == out_max);
+			cmd->out_redir = parse_overwrite(*(*token)->next, ++out == out_max);
 		else if (ft_strncmp((*token)->value, ">>", 3) == 0)
-			cmd->out_redir = parse_append(**token, out++ == out_max);
-
+			cmd->out_redir = parse_append(*(*token)->next, ++out == out_max);
+		(*token) = (*token)->next->next;
 		if (cmd->in_redir == -1 || cmd->out_redir == -1)
 			return (false);
 
@@ -193,7 +241,7 @@ static bool parse_redirs(t_cmd *cmd, t_token **token)
 
 	if (cmd->in_redir == -2 || cmd->out_redir == -2)
 	{
-		ft_fprintf(STDERR_FILENO, SHELL_NAME ": [Error] Somehow there was no last...");
+		ft_fprintf(STDERR_FILENO, SHELL_NAME ": [Error] Somehow there was no last...\n");
 		return (false);
 	}
 
@@ -222,7 +270,7 @@ const t_cmd	*build_cmd_table(t_token **token_list)
 			token = token->next;
 			continue ;
 		}
-		if (!parse_words(&cmd_table[i], &token) && !parse_redirs(&cmd_table[i], &token))
+		if (!parse_words(&cmd_table[i], &token) || !parse_redirs(&cmd_table[i], &token))
 		{
 			perror(SHELL_NAME);
 			free_tokens(token_list);
