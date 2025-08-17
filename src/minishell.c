@@ -10,6 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "ft_data.h"
 #include <minishell.h>
 #include <stdlib.h>
 
@@ -29,6 +30,8 @@ static char	*getprompt(void)
 	return (prompt);
 }
 
+// TODO: be not shit
+// TODO: set the shelllvl +1
 static t_map	create_env(char *envp[])
 {
 	t_map	env;
@@ -55,23 +58,14 @@ static t_map	create_env(char *envp[])
 			env.size = -1;
 			return (env);
 		}
-		if (cur[key_len + 1] != '\0')
+		if (!map_set(&env, key, &(cur[key_len + 1])))
 		{
-			value = ft_strdup(&(cur[key_len + 1]));
-			if (value == NULL)
-			{
-				free(key);
-				map_free(&env);
-				env.size = -1;
-				return (env);
-			}
-		}
-		if (!map_set(&env, key, value))
-		{
+			free(key);
 			map_free(&env);
 			env.size = -1;
 			return (env);
 		}
+		free(key);
 		i++;
 	}
 	return (env);
@@ -124,5 +118,6 @@ int	main(int argc, char *argv[], char *envp[])
 			add_history(line);
 		ft_printf(ANSI_GREEN SHELL_NAME " [Debug] line: %s\n", ANSI_RESET, line);
 	}
+	map_free((t_map *) &env);
 	exit(EXIT_SUCCESS);
 }
