@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include <minishell.h>
+#include <stdlib.h>
 
 static char	*getprompt(void)
 {
@@ -31,6 +32,9 @@ static char	*getprompt(void)
 static t_map	create_env(char *envp[])
 {
 	t_map	env;
+	char	*cur;
+	char	*key;
+	char	*value;
 	int		key_len;
 	int		i;
 
@@ -38,10 +42,31 @@ static t_map	create_env(char *envp[])
 	i = 0;
 	while (envp[i])
 	{
+		cur = envp[i];
 		key_len = 0;
-		while (envp[i][key_len] && envp[i][key_len] != '=')
+		key = NULL;
+		value = NULL;
+		while (cur[key_len] && cur[key_len] != '=')
 			key_len++;
-		if (!map_set(&env, ft_strndup(envp[i], key_len), ft_strdup(&(envp[i][key_len + 1]))))
+		key = ft_strndup(cur, key_len);
+		if (key == NULL)
+		{
+			map_free(&env);
+			env.size = -1;
+			return (env);
+		}
+		if (cur[key_len + 1] != '\0')
+		{
+			value = ft_strdup(&(cur[key_len + 1]));
+			if (value == NULL)
+			{
+				free(key);
+				map_free(&env);
+				env.size = -1;
+				return (env);
+			}
+		}
+		if (!map_set(&env, key, value))
 		{
 			map_free(&env);
 			env.size = -1;
