@@ -6,13 +6,13 @@
 /*   By: llage <llage@student.42angouleme.fr>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/30 20:27:04 by llage             #+#    #+#             */
-/*   Updated: 2025/08/11 19:08:58 by rvitiell         ###   ########.fr       */
+/*   Updated: 2025/08/17 05:09:27 by logname          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <minishell.h>
 
-char	*getprompt(void)
+static char	*getprompt(void)
 {
 	const char	*at = ANSI_GREEN "user@hostname" ANSI_RESET ":" ANSI_BLUE;
 	const char	*delimiter = ANSI_RESET "$ ";
@@ -28,16 +28,51 @@ char	*getprompt(void)
 	return (prompt);
 }
 
+static t_map	create_env(char *envp[])
+{
+	t_map	env;
+	int		key_len;
+	int		i;
+
+	env = map_bzero();
+	i = 0;
+	while (envp[i])
+	{
+		key_len = 0;
+		while (envp[i][key_len] && envp[i][key_len] != '=')
+			key_len++;
+		if (!map_set(&env, ft_strndup(envp[i], key_len), ft_strdup(&(envp[i][key_len + 1]))))
+		{
+			map_free(&env);
+			env.size = -1;
+			return (env);
+		}
+		i++;
+	}
+	return (env);
+}
+
 int	main(int argc, char *argv[], char *envp[])
 {
 	const t_cmd	*cmd_table;
 	t_token		*tokens;
 	char		*prompt;
 	char		*line;
+	const t_map	env = create_env(envp);
 
 	(void)argc;
 	(void)argv;
-	(void)envp;
+	if (env.size == (size_t) -1)
+	{
+		perror(SHELL_NAME);
+		exit(EXIT_FAILURE);
+	}
+	if (DEBUG)
+	{
+		ft_printf(ANSI_GREEN);
+		map_print(&env);
+		ft_printf(ANSI_RESET);
+	}
 	while (true)
 	{
 		prompt = getprompt();

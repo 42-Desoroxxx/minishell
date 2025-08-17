@@ -22,6 +22,7 @@
 # include <readline/history.h>
 # include <linux/limits.h>
 # include <fcntl.h>
+# include <ft_data.h>
 
 # define DEBUG true
 # define SHELL_NAME "Eepyshell"
