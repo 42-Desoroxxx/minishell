@@ -87,7 +87,7 @@ static t_token_type	find_type(t_lexer *lexer)
 	return (EMPTY);
 }
 
-t_token	*lexer(char *line)
+t_token	*lexer(char *line, const t_map env)
 {
 	t_token			*token;
 	t_lexer			lexer;
@@ -107,5 +107,6 @@ t_token	*lexer(char *line)
 		lexer.cursor += lexer.offset;
 		lexer.offset = 0;
 	}
+	expand_tokens(token, env);
 	return (token);
 }

@@ -34,7 +34,7 @@ RESET = \033[0m
 CC = cc
 BASE_FLAGS = -Wall -Wextra -Werror=vla
 RELEASE_FLAGS = -Werror -O3 -ffast-math -march=native -flto
-DEBUG_FLAGS =  -g -O0 -fno-builtin -mno-omit-leaf-frame-pointer -fno-omit-frame-pointer -fstrict-flex-arrays=3
+DEBUG_FLAGS =  -g -O0 -fno-builtin -mno-omit-leaf-frame-pointer -fno-omit-frame-pointer
 SANE_FLAGS = -fsanitize=address,pointer-compare,pointer-subtract,leak,undefined,shift,shift-exponent,shift-base,integer-divide-by-zero,unreachable,vla-bound,null,signed-integer-overflow,bounds,alignment,float-divide-by-zero,float-cast-overflow,nonnull-attribute,returns-nonnull-attribute,bool,enum,pointer-overflow,builtin -fsanitize-address-use-after-scope
 ifeq ($(MAKE_MODE),release)
 	CFLAGS = $(BASE_FLAGS) $(RELEASE_FLAGS)
@@ -66,7 +66,7 @@ INCLUDES = -Iincludes $(foreach lib,$(LIB_DIRS),-I$(lib)/includes)
 # Sources
 SRC_FILES :=	minishell.c \
 				utils/debug_utils.c utils/free_utils.c \
-				lexing/lexer.c lexing/type_lexer.c \
+				lexing/lexer.c lexing/type_lexer.c lexing/expand.c\
 				parsing/parser.c
 SRCS := $(addprefix $(SRC)/,$(SRC_FILES))
 OBJS := $(patsubst $(SRC)/%.c,$(OBJ)/%.o,$(SRCS))
