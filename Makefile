@@ -9,7 +9,7 @@
 # |  $$$$$$/|  $$$$$$/ /$$$$$$$$|  $$$$$$$      | $$ \/  | $$|  $$$$$$$| $$ \  $$|  $$$$$$$  #
 #  \______/  \______/ |________/ \____  $$      |__/     |__/ \_______/|__/  \__/ \_______/  #
 #                                /$$  | $$                                                   #
-#        )))                    |  $$$$$$/                                    Version 1.1    #
+#        )))                    |  $$$$$$/                                    Version 1.5    #
 #       (((                      \______/                                                    #
 #     +-----+                                   __..--''``---....___   _..._    __           #
 #     |     |]      /    //    // //  /// //_.-'    .-/";  `        ``<._  ``.''_ `. / // /  #
@@ -32,8 +32,8 @@ RESET = \033[0m
 
 # Compiler
 CC = cc
-BASE_FLAGS = -Wall -Wextra -Werror=vla
-RELEASE_FLAGS = -Werror -O3 -ffast-math -march=native -flto
+BASE_FLAGS = -Wall -Wextra -Werror=vla -pedantic-errors -Werror=int-conversion -Werror=incompatible-pointer-types -Werror=implicit-function-declaration -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -flto=thin
+RELEASE_FLAGS = -Werror -O3 -ffast-math -march=native
 DEBUG_FLAGS =  -g -O0 -fno-builtin -mno-omit-leaf-frame-pointer -fno-omit-frame-pointer -fstrict-flex-arrays=3
 SANE_FLAGS = -fsanitize=address,pointer-compare,pointer-subtract,leak,undefined,shift,shift-exponent,shift-base,integer-divide-by-zero,unreachable,vla-bound,null,signed-integer-overflow,bounds,alignment,float-divide-by-zero,float-cast-overflow,nonnull-attribute,returns-nonnull-attribute,bool,enum,pointer-overflow,builtin -fsanitize-address-use-after-scope
 ifeq ($(MAKE_MODE),release)
@@ -56,7 +56,7 @@ endif
 # Libraries
 LIB_DIRS = libft
 LIB_FILES = libft/libft.a
-LDFLAGS = -lreadline
+LDFLAGS = -fuse-ld=lld -lreadline
 
 # Directories
 SRC = src
