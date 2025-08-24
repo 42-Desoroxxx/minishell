@@ -26,10 +26,10 @@
 
 # define DEBUG true
 # define SHELL_NAME "Eepyshell"
-# define ANSI_RED "\001\e[31m\002"
-# define ANSI_GREEN "\001\e[32m\002"
-# define ANSI_BLUE "\001\e[34m\002"
-# define ANSI_RESET "\001\e[0m\002"
+# define ANSI_RED "\001\033[31m\002"
+# define ANSI_GREEN "\001\033[32m\002"
+# define ANSI_BLUE "\001\033[34m\002"
+# define ANSI_RESET "\001\033[0m\002"
 
 typedef enum e_token_type
 {
