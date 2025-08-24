@@ -159,11 +159,6 @@ static int	parse_heredoc(t_token token, bool last)
 	fd = open((char *)rnd_filename, O_CREAT | O_TRUNC | S_IRWXU | O_APPEND, __O_TMPFILE, 0644);
 	if (fd == 0)
 		return (-2);
-	if (last == false)
-	{
-		close(fd);
-		return (0);
-	}
 	while (true)
 	{
 		line = get_next_line(STDIN_FILENO);
@@ -176,6 +171,11 @@ static int	parse_heredoc(t_token token, bool last)
 		free(line);
 	}
 	free(line);
+	if (!last)
+	{
+		close(fd);
+		return (0);
+	}
 	return (fd);
 }
 

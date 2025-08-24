@@ -101,7 +101,7 @@ int	main(int argc, char *argv[], char *envp[])
 			break ;
 		if (line[0] == '\0')
 			continue ;
-		tokens = lexer(line);
+		tokens = lexer(line, env);
 		if (tokens)
 		{
 			if (DEBUG)

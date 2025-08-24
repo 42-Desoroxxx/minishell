@@ -73,7 +73,7 @@ typedef struct s_cmd
 // --- Lexing ---
 
 // lexer.c
-t_token			*lexer(char *input);
+t_token			*lexer(char *input, const t_map env);
 
 // type_lexer.c
 void			type_pipe(t_lexer *lexer);
@@ -85,6 +85,7 @@ void			type_redir(t_lexer *lexer);
 
 // parser.c
 const t_cmd		*parser(t_token **token_list);
+bool			expand_tokens(t_token *token, const t_map env);
 
 // --- Utils ---
 
