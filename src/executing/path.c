@@ -72,7 +72,7 @@ static char	*check_path(char *path, char *name)
  *
  * @returns the absolute path to the executable or NULL if none was found.
  */
-char	*find_in_path(t_map env , char *name)
+char	*find_in_path(t_map env, char *name)
 {
 	const char	*path = map_get(&env, "PATH");
 	char		**path_list;
