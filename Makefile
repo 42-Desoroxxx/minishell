@@ -74,6 +74,7 @@ INCLUDES = -Iincludes $(foreach lib,$(LIB_DIRS),-I$(lib)/includes)
 SRC_FILES :=	minishell.c \
 				utils/debug_utils.c utils/free_utils.c \
 				lexing/lexer.c lexing/type_lexer.c \
+				expanding/expand.c expanding/expand_utils.c \
 				parsing/parser.c
 SRCS := $(addprefix $(SRC)/,$(SRC_FILES))
 OBJS := $(patsubst $(SRC)/%.c,$(OBJ)/%.o,$(SRCS))

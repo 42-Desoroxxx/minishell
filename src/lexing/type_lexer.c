@@ -53,3 +53,11 @@ void	type_redir(t_lexer *lexer)
 	if (c == '<' || c == '>')
 		lexer->offset++;
 }
+
+void	link_token_back(t_token *last_token, t_token *new_token)
+{
+	while (last_token->next)
+		last_token = last_token->next;
+	last_token->next = new_token;
+	new_token->prev = last_token;
+}

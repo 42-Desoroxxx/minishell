@@ -80,12 +80,16 @@ void			type_pipe(t_lexer *lexer);
 void			type_exp(t_lexer *lexer);
 void			type_word(t_lexer *lexer);
 void			type_redir(t_lexer *lexer);
+void			link_token_back(t_token *last_token, t_token *new_token);
 
 // --- Parser ---
 
 // parser.c
-const t_cmd		*parser(t_token **token_list);
+const t_cmd		*parser(t_token **token_list, const t_map env);
 bool			expand_tokens(t_token *token, const t_map env);
+char			*expand_line(char *line, const t_map env);
+void			handle_quotes(char c, t_status *quotes);
+bool			is_possible_char(char c, int i);
 
 // --- Utils ---
 

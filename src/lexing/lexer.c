@@ -24,43 +24,31 @@ static void	skip_space(t_lexer *lexer)
 	}
 }
 
-// refactor the hell out of this - Luna Mira Lage 2025-08-11
-static void	tokenize(t_token **first_token_ptr, t_lexer *lexer, t_token_type type)
+static bool	tokenize(t_token **fst_token_ptr, t_lexer *lexer, t_token_type type)
 {
 	t_token	*new_token;
-	t_token	*last_token;
 
 	new_token = ft_calloc(1, sizeof(t_token));
 	if (new_token == NULL)
-	{
-		perror(SHELL_NAME);
-		if (*first_token_ptr != NULL)
-			free_tokens(first_token_ptr);
-		return ;
-	}
+		return (false);
 	if (type == WORD || type == REDIR)
 	{
-		new_token->value = ft_strndup(&(lexer->line[lexer->cursor]), lexer->offset);
+		new_token->value = ft_strndup(&(lexer->line[lexer->cursor]),
+				lexer->offset);
 		if (new_token->value == NULL)
 		{
-			perror(SHELL_NAME);
 			free(new_token);
-			if (*first_token_ptr != NULL)
-				free_tokens(first_token_ptr);
-			return ;
+			return (false);
 		}
 	}
 	new_token->type = type;
-	if (*first_token_ptr == NULL)
+	if (*fst_token_ptr == NULL)
 	{
-		*first_token_ptr = new_token;
-		return ;
+		*fst_token_ptr = new_token;
+		return (true);
 	}
-	last_token = *first_token_ptr;
-	while (last_token->next)
-		last_token = last_token->next;
-	last_token->next = new_token;
-	new_token->prev = last_token;
+	link_token_back(*fst_token_ptr, new_token);
+	return (true);
 }
 
 // that's a lot of ifs you nasty bitch - Luna Mira Lage (Desoroxxx) 2025-08-08
@@ -87,6 +75,16 @@ static t_token_type	find_type(t_lexer *lexer)
 	return (EMPTY);
 }
 
+static t_lexer	lexer_bzero(void)
+{
+	return ((t_lexer){
+		.line = NULL,
+		.cursor = 0,
+		.offset = 0,
+		.status = NONE
+	});
+}
+
 t_token	*lexer(char *line, const t_map env)
 {
 	t_token			*token;
@@ -94,19 +92,27 @@ t_token	*lexer(char *line, const t_map env)
 	t_token_type	type;
 
 	token = NULL;
+	lexer = lexer_bzero();
 	lexer.line = line;
-	lexer.cursor = 0;
-	lexer.offset = 0;
-	lexer.status = NONE;
 	type = WORD;
 	while (type != EMPTY)
 	{
 		skip_space(&lexer);
 		type = find_type(&lexer);
-		tokenize(&token, &lexer, type);
+		if (!tokenize(&token, &lexer, type))
+		{
+			perror(SHELL_NAME);
+			free_tokens(&token);
+			return (NULL);
+		}
 		lexer.cursor += lexer.offset;
 		lexer.offset = 0;
 	}
-	expand_tokens(token, env);
+	if (!expand_tokens(token, env))
+	{
+		perror(SHELL_NAME);
+		free_tokens(&token);
+		return (NULL);
+	}
 	return (token);
 }

@@ -39,7 +39,13 @@ void	free_tokens(t_token **token_ptr)
 	while (token->next)
 	{
 		token = token->next;
+		if (token->prev->value != NULL)
+		{
+			free(token->prev->value);
+			token->prev->value = NULL;
+		}
 		free(token->prev);
+		token->prev = NULL;
 	}
 	free(token);
 	*token_ptr = NULL;

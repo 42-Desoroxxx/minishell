@@ -10,12 +10,9 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "get_next_line.h"
-#include <fcntl.h>
 #include <minishell.h>
-#include <readline/chardefs.h>
-#include <string.h>
-#include <unistd.h>
+
+// tema la taille de la norme
 
 static void	check_pipe(t_token *token, t_token **token_list)
 {
@@ -108,9 +105,6 @@ static int	count_redirs(t_token *token, int *in, int *out)
 	return (i);
 }
 
-// Check if the file exist, if not error
-// If last, return an opened fd.
-// Token is the target, so the file name.
 static int	parse_redir(t_token token, bool last)
 {
 	int	fd;
@@ -141,36 +135,36 @@ static unsigned char	*random_string(void)
 	return (string);
 }
 
-// Create a random filename
-// TODO: have the file in `/tmp` and start with .
-// Open the fd, wait for the delimiter.
-// If not last you can close and return here.
-// Remove the delimiter from the file.
-// If the delimiter does NOT contains quotes or single quotes expand the content.
-// If last, return an opened fd.
-// Token is the delimiter.
-static int	parse_heredoc(t_token token, bool last)
+static void	read_heredoc_input(int fd, t_token token, const t_map env)
 {
-    char            *line;
-	unsigned char	*rnd_filename;
-	int				fd;
+	char	*line;
 
-	rnd_filename = random_string();
-	fd = open((char *)rnd_filename, O_CREAT | O_TRUNC | S_IRWXU | O_APPEND, __O_TMPFILE, 0644);
-	if (fd == 0)
-		return (-2);
 	while (true)
 	{
 		line = get_next_line(STDIN_FILENO);
 		if (line == NULL)
 			continue ;
+		line = expand_line(line, env);
 		if (ft_strncmp(line, token.value, strlen(token.value)) != 0)
 			ft_fprintf(fd, line);
 		else
-				break;
+			break ;
 		free(line);
 	}
 	free(line);
+}
+
+static int	parse_heredoc(t_token token, bool last, const t_map env)
+{
+	unsigned char		*rnd_filename;
+	int					fd;
+
+	rnd_filename = random_string();
+	fd = open((char *)rnd_filename,
+			O_CREAT | O_TRUNC | S_IRWXU | O_APPEND, __O_TMPFILE, 0644);
+	if (fd == 0)
+		return (-2);
+	read_heredoc_input(fd, token, env);
 	if (!last)
 	{
 		close(fd);
@@ -179,14 +173,11 @@ static int	parse_heredoc(t_token token, bool last)
 	return (fd);
 }
 
-// Check if the file exist, if not create.
-// If last, return an opened fd for overwrite.
-// Token is the target, so the file name.
 static int	parse_overwrite(t_token token, bool last)
 {
 	int	fd;
 
-	fd = open(token.value, O_WRONLY | O_CREAT | O_TRUNC, 0644); //permision denied?
+	fd = open(token.value, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 	if (last)
 		return (fd);
 	fd = close(fd);
@@ -195,9 +186,6 @@ static int	parse_overwrite(t_token token, bool last)
 	return (fd);
 }
 
-// Check if the file exist, if not create.
-// If last, return an opened fd for appending.
-// Token is the target, so the file name.
 static int	parse_append(t_token token, bool last)
 {
 	int	fd;
@@ -211,7 +199,18 @@ static int	parse_append(t_token token, bool last)
 	return (fd);
 }
 
-static bool parse_redirs(t_cmd *cmd, t_token **token)
+static bool	parse_error(t_cmd *cmd)
+{
+	if (cmd->in_redir == -2 || cmd->out_redir == -2)
+	{
+		ft_fprintf(STDERR_FILENO,
+			SHELL_NAME ": [Error] Somehow there was no last...\n");
+		return (false);
+	}
+	return (true);
+}
+
+static bool	parse_redirs(t_cmd *cmd, t_token **token, const t_map env)
 {
 	int	in;
 	int	out;
@@ -227,7 +226,7 @@ static bool parse_redirs(t_cmd *cmd, t_token **token)
 		if (ft_strncmp((*token)->value, "<", 2) == 0)
 			cmd->in_redir = parse_redir(*(*token)->next, ++in == in_max);
 		else if (ft_strncmp((*token)->value, "<<", 3) == 0)
-			cmd->in_redir = parse_heredoc(*(*token)->next, ++in == in_max);
+			cmd->in_redir = parse_heredoc(*(*token)->next, ++in == in_max, env);
 		else if (ft_strncmp((*token)->value, ">", 2) == 0)
 			cmd->out_redir = parse_overwrite(*(*token)->next, ++out == out_max);
 		else if (ft_strncmp((*token)->value, ">>", 3) == 0)
@@ -235,22 +234,14 @@ static bool parse_redirs(t_cmd *cmd, t_token **token)
 		(*token) = (*token)->next->next;
 		if (cmd->in_redir == -1 || cmd->out_redir == -1)
 			return (false);
-
 		count--;
 	}
-
-	if (cmd->in_redir == -2 || cmd->out_redir == -2)
-	{
-		ft_fprintf(STDERR_FILENO, SHELL_NAME ": [Error] Somehow there was no last...\n");
-		return (false);
-	}
-
-	return (true);
+	return (parse_error(cmd));
 }
 
-const t_cmd	*build_cmd_table(t_token **token_list)
+static const t_cmd	*build_cmd_table(t_token **token_ptr, const t_map env)
 {
-	const int	cmd_count = count_pipes(token_list) + 1;
+	const int	cmd_count = count_pipes(token_ptr) + 1;
 	t_cmd		*cmd_table;
 	t_token		*token;
 	int			i;
@@ -259,32 +250,30 @@ const t_cmd	*build_cmd_table(t_token **token_list)
 	if (cmd_table == NULL)
 	{
 		perror(SHELL_NAME);
-		free_tokens(token_list);
+		free_tokens(token_ptr);
+		return (NULL);
 	}
-	i = 0;
-	token = *token_list;
-	while (i < cmd_count)
+	i = -1;
+	token = *token_ptr;
+	while (++i < cmd_count)
 	{
 		if (token->type == PIPE)
-		{
 			token = token->next;
-			continue ;
-		}
-		if (!parse_words(&cmd_table[i], &token) || !parse_redirs(&cmd_table[i], &token))
+		if (!parse_words(&cmd_table[i], &token)
+			|| !parse_redirs(&cmd_table[i], &token, env))
 		{
 			perror(SHELL_NAME);
-			free_tokens(token_list);
+			free_tokens(token_ptr);
 			free_cmd_table(&cmd_table);
 			return (NULL);
 		}
 		if (token->type == EMPTY)
 			break ;
-		i++;
 	}
 	return (cmd_table);
 }
 
-const t_cmd	*parser(t_token **token_list)
+const t_cmd	*parser(t_token **token_list, const t_map env)
 {
 	t_token	*token;
 
@@ -299,5 +288,5 @@ const t_cmd	*parser(t_token **token_list)
 			return (NULL);
 		token = token->next;
 	}
-	return (build_cmd_table(token_list));
+	return (build_cmd_table(token_list, env));
 }

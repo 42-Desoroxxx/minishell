@@ -34,7 +34,8 @@ void	print_tokens(const t_token token)
 	ft_printf(ANSI_GREEN SHELL_NAME " [Debug]: Tokens:\n" ANSI_RESET);
 	while (current.next != NULL)
 	{
-		ft_printf(ANSI_GREEN "type: %s value: %s ", token_type[current.type], current.value);
+		ft_printf(ANSI_GREEN "type: %s value: %s ",
+			token_type[current.type], current.value);
 		if (current.prev != NULL)
 			ft_printf("hasPrevious");
 		if (current.next != NULL && current.next->type != EMPTY)
@@ -56,7 +57,8 @@ void	print_cmd_table(const t_cmd *cmd_table)
 	{
 		ft_printf(ANSI_GREEN "[%d] ", i);
 		print_char_array(" args:", current.args);
-		ft_printf(" in_redirs: %d out_redirs: %d \n" ANSI_RESET, current.in_redir, current.out_redir);
+		ft_printf(" in_redirs: %d out_redirs: %d \n" ANSI_RESET,
+			current.in_redir, current.out_redir);
 		current = cmd_table[++i];
 	}
 }

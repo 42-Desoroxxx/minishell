@@ -10,9 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ft_data.h"
 #include <minishell.h>
-#include <stdlib.h>
 
 static char	*getprompt(void)
 {
@@ -102,11 +100,11 @@ int	main(int argc, char *argv[], char *envp[])
 		if (line[0] == '\0')
 			continue ;
 		tokens = lexer(line, env);
-		if (tokens)
+		if (tokens != NULL)
 		{
 			if (DEBUG)
 				print_tokens(*tokens);
-			cmd_table = parser(&tokens);
+			cmd_table = parser(&tokens, env);
 			free_tokens(&tokens);
 			if (cmd_table != NULL)
 			{
@@ -116,7 +114,8 @@ int	main(int argc, char *argv[], char *envp[])
 		}
 		if (line[0] != ' ')
 			add_history(line);
-		ft_printf(ANSI_GREEN SHELL_NAME " [Debug] line: %s\n", ANSI_RESET, line);
+		ft_printf(ANSI_GREEN SHELL_NAME " [Debug] line: %s\n" ANSI_RESET,
+			line);
 	}
 	map_free((t_map *) &env);
 	exit(EXIT_SUCCESS);
