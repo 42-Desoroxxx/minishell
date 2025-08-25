@@ -6,7 +6,7 @@
 /*   By: llage <llage@student.42angouleme.fr>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/30 20:29:31 by llage             #+#    #+#             */
-/*   Updated: 2025/08/11 17:39:44 by rvitiell         ###   ########.fr       */
+/*   Updated: 2025/08/25 07:57:29 by llage            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,6 +92,9 @@ void			handle_quotes(char c, t_status *quotes);
 bool			is_possible_char(char c, int i);
 
 // --- Utils ---
+
+// env.c
+t_map			create_env(char *envp[]);
 
 // debug_utils.c
 void			print_tokens(const t_token token);

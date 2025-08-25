@@ -72,7 +72,7 @@ INCLUDES = -Iincludes $(foreach lib,$(LIB_DIRS),-I$(lib)/includes)
 
 # Sources
 SRC_FILES :=	minishell.c \
-				utils/debug_utils.c utils/free_utils.c \
+				utils/debug_utils.c utils/free_utils.c utils/env.c \
 				lexing/lexer.c lexing/type_lexer.c \
 				expanding/expand.c expanding/expand_utils.c \
 				parsing/parser.c

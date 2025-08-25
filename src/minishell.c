@@ -6,7 +6,7 @@
 /*   By: llage <llage@student.42angouleme.fr>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/30 20:27:04 by llage             #+#    #+#             */
-/*   Updated: 2025/08/17 05:09:27 by logname          ###   ########.fr       */
+/*   Updated: 2025/08/17 05:09:27 by llage            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,47 +28,6 @@ static char	*getprompt(void)
 	return (prompt);
 }
 
-// TODO: be not shit
-// TODO: set the shelllvl +1
-static t_map	create_env(char *envp[])
-{
-	t_map	env;
-	char	*cur;
-	char	*key;
-	char	*value;
-	int		key_len;
-	int		i;
-
-	env = map_bzero();
-	i = 0;
-	while (envp[i])
-	{
-		cur = envp[i];
-		key_len = 0;
-		key = NULL;
-		value = NULL;
-		while (cur[key_len] && cur[key_len] != '=')
-			key_len++;
-		key = ft_strndup(cur, key_len);
-		if (key == NULL)
-		{
-			map_free(&env);
-			env.size = -1;
-			return (env);
-		}
-		if (!map_set(&env, key, &(cur[key_len + 1])))
-		{
-			free(key);
-			map_free(&env);
-			env.size = -1;
-			return (env);
-		}
-		free(key);
-		i++;
-	}
-	return (env);
-}
-
 int	main(int argc, char *argv[], char *envp[])
 {
 	const t_cmd	*cmd_table;
@@ -84,7 +43,7 @@ int	main(int argc, char *argv[], char *envp[])
 		perror(SHELL_NAME);
 		exit(EXIT_FAILURE);
 	}
-	if (DEBUG)
+	if (DEBUG) // TODO: Temporary until we can run export
 	{
 		ft_printf(ANSI_GREEN);
 		map_print(&env);
