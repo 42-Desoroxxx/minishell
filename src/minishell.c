@@ -6,7 +6,7 @@
 /*   By: llage <llage@student.42angouleme.fr>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/30 20:27:04 by llage             #+#    #+#             */
-/*   Updated: 2025/08/17 05:09:27 by llage            ###   ########.fr       */
+/*   Updated: 2025/08/25 10:00:37 by llage            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,8 +57,20 @@ int	main(int argc, char *argv[], char *envp[])
 		if (line == NULL)
 			break ;
 		if (line[0] == '\0')
+		{
+			free(line);
 			continue ;
+		}
+		if (line[0] != ' ')
+			add_history(line);
+		ft_printf(ANSI_GREEN SHELL_NAME " [Debug] Line: %s\n" ANSI_RESET,
+			line);
+		char *absolute_path = find_in_path(env, line);
+		ft_printf(ANSI_GREEN SHELL_NAME " [Debug] Absolute path: %s\n",
+			absolute_path);
+		free(absolute_path);
 		tokens = lexer(line, env);
+		free(line);
 		if (tokens != NULL)
 		{
 			if (DEBUG)
@@ -71,10 +83,6 @@ int	main(int argc, char *argv[], char *envp[])
 					print_cmd_table(cmd_table);
 			}
 		}
-		if (line[0] != ' ')
-			add_history(line);
-		ft_printf(ANSI_GREEN SHELL_NAME " [Debug] line: %s\n" ANSI_RESET,
-			line);
 	}
 	map_free((t_map *) &env);
 	exit(EXIT_SUCCESS);

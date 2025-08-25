@@ -6,7 +6,7 @@
 /*   By: llage <llage@student.42angouleme.fr>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/30 20:29:31 by llage             #+#    #+#             */
-/*   Updated: 2025/08/25 07:57:29 by llage            ###   ########.fr       */
+/*   Updated: 2025/08/25 09:24:51 by llage            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,7 +82,7 @@ void			type_word(t_lexer *lexer);
 void			type_redir(t_lexer *lexer);
 void			link_token_back(t_token *last_token, t_token *new_token);
 
-// --- Parser ---
+// --- Parsing ---
 
 // parser.c
 const t_cmd		*parser(t_token **token_list, const t_map env);
@@ -90,6 +90,11 @@ bool			expand_tokens(t_token *token, const t_map env);
 char			*expand_line(char *line, const t_map env);
 void			handle_quotes(char c, t_status *quotes);
 bool			is_possible_char(char c, int i);
+
+// --- Executing ---
+
+// path.c
+char			*find_in_path(t_map env, char *name);
 
 // --- Utils ---
 
