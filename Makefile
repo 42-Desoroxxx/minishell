@@ -62,7 +62,7 @@ LIB_DIRS = libft
 LIB_FILES = libft/libft.a
 LDFLAGS = -lreadline
 ifeq ($(shell expr $(CLANG_VERSION) \>= 15), 1)
-	DEBUG_FLAGS += -fuse-ld=lld
+	LDFLAGS += -fuse-ld=lld
 endif
 
 # Directories
