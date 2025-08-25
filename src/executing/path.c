@@ -61,7 +61,6 @@ static char	*check_path(char *path, char *name)
 		perror(SHELL_NAME);
 		return (NULL);
 	}
-	ft_printf("Checking %s\n", result);
 	if (access(result, X_OK) == 0)
 		return (result);
 	free(result);

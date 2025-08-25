@@ -75,7 +75,7 @@ SRC_FILES :=	minishell.c \
 				utils/debug_utils.c utils/free_utils.c utils/env.c \
 				lexing/lexer.c lexing/type_lexer.c \
 				expanding/expand.c expanding/expand_utils.c \
-				parsing/parser.c \
+				parsing/parser.c parsing/parse_heredoc.c parsing/parse_n_count.c parsing/parse_redirs.c \
 				executing/path.c
 SRCS := $(addprefix $(SRC)/,$(SRC_FILES))
 OBJS := $(patsubst $(SRC)/%.c,$(OBJ)/%.o,$(SRCS))

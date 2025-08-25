@@ -81,6 +81,7 @@ void			type_exp(t_lexer *lexer);
 void			type_word(t_lexer *lexer);
 void			type_redir(t_lexer *lexer);
 void			link_token_back(t_token *last_token, t_token *new_token);
+t_token_type	find_type(t_lexer *lexer);
 
 // --- Parsing ---
 
@@ -90,6 +91,11 @@ bool			expand_tokens(t_token *token, const t_map env);
 char			*expand_line(char *line, const t_map env);
 void			handle_quotes(char c, t_status *quotes);
 bool			is_possible_char(char c, int i);
+int				parse_heredoc(t_token token, bool last, const t_map env);
+bool			parse_redirs(t_cmd *cmd, t_token **token, const t_map env);
+bool			check_last(t_cmd *cmd);
+bool			parse_words(t_cmd *cmd, t_token **token);
+int				count_pipes(t_token **token_list);
 
 // --- Executing ---
 

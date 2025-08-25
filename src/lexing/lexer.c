@@ -51,30 +51,6 @@ static bool	tokenize(t_token **fst_token_ptr, t_lexer *lexer, t_token_type type)
 	return (true);
 }
 
-// that's a lot of ifs you nasty bitch - Luna Mira Lage (Desoroxxx) 2025-08-08
-static t_token_type	find_type(t_lexer *lexer)
-{
-	const char	c = lexer->line[lexer->cursor];
-
-	if (c == '|')
-	{
-		lexer->offset = 1;
-		return (PIPE);
-	}
-	if (c == '<' || c == '>')
-	{
-		lexer->offset = 1;
-		type_redir(lexer);
-		return (REDIR);
-	}
-	if (c)
-	{
-		type_word(lexer);
-		return (WORD);
-	}
-	return (EMPTY);
-}
-
 static t_lexer	lexer_bzero(void)
 {
 	return ((t_lexer){
@@ -83,6 +59,22 @@ static t_lexer	lexer_bzero(void)
 		.offset = 0,
 		.status = NONE
 	});
+}
+
+static bool	get_type_tokenize(t_lexer *lexer,
+	t_token_type *type, t_token **token)
+{
+	skip_space(lexer);
+	*type = find_type(lexer);
+	if (!tokenize(token, lexer, *type))
+	{
+		perror(SHELL_NAME);
+		free_tokens(token);
+		return (false);
+	}
+	lexer->cursor += lexer->offset;
+	lexer->offset = 0;
+	return (true);
 }
 
 t_token	*lexer(char *line, const t_map env)
@@ -96,18 +88,8 @@ t_token	*lexer(char *line, const t_map env)
 	lexer.line = line;
 	type = WORD;
 	while (type != EMPTY)
-	{
-		skip_space(&lexer);
-		type = find_type(&lexer);
-		if (!tokenize(&token, &lexer, type))
-		{
-			perror(SHELL_NAME);
-			free_tokens(&token);
+		if (!get_type_tokenize(&lexer, &type, &token))
 			return (NULL);
-		}
-		lexer.cursor += lexer.offset;
-		lexer.offset = 0;
-	}
 	if (!expand_tokens(token, env))
 	{
 		perror(SHELL_NAME);

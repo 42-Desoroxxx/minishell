@@ -63,12 +63,15 @@ int	main(int argc, char *argv[], char *envp[])
 		}
 		if (line[0] != ' ')
 			add_history(line);
-		ft_printf(ANSI_GREEN SHELL_NAME " [Debug] Line: %s\n" ANSI_RESET,
-			line);
-		char *absolute_path = find_in_path(env, line);
-		ft_printf(ANSI_GREEN SHELL_NAME " [Debug] Absolute path: %s\n",
-			absolute_path);
-		free(absolute_path);
+		if (DEBUG)
+		{
+			ft_printf(ANSI_GREEN SHELL_NAME " [Debug] Line: %s\n" ANSI_RESET,
+				line);
+			char *absolute_path = find_in_path(env, line);
+			ft_printf(ANSI_GREEN SHELL_NAME " [Debug] Absolute path: %s\n",
+				absolute_path);
+			free(absolute_path);
+		}
 		tokens = lexer(line, env);
 		free(line);
 		if (tokens != NULL)
