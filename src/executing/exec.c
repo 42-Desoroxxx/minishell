@@ -30,6 +30,12 @@ static int	exec_builtin(t_cmd cmd, t_map env)
 {
 	(void)cmd;
 	(void)env;
+
+	if (ft_str_equal(cmd.args[0], "env"))
+	{
+		map_print(&env);
+		return (0);
+	}
 	ft_fprintf(STDERR_FILENO, SHELL_NAME
 		" [Error]: Builtin command not implemented\n");
 	return (1);
@@ -47,6 +53,27 @@ int	exec_table(t_cmd *cmd_table, t_map env)
 
 	i = 0;
 	current = cmd_table[i];
+	if (cmd_table[1].args == NULL && is_builtin(current))
+	{
+		int fd_in_save = dup(STDIN_FILENO);
+		int fd_out_save = dup(STDOUT_FILENO);
+
+		dup2(current.in_redir, STDIN_FILENO);
+		dup2(current.out_redir, STDOUT_FILENO);
+
+		close(current.in_redir);
+		close(current.out_redir);
+
+		status = exec_builtin(current, env);
+
+		dup2(fd_in_save, STDIN_FILENO);
+		dup2(fd_out_save, STDOUT_FILENO);
+
+		close(fd_in_save);
+		close(fd_out_save);
+
+		return (status);
+	}
 	while (current.args != NULL)
 	{
 		if (is_builtin(current))
@@ -56,6 +83,16 @@ int	exec_table(t_cmd *cmd_table, t_map env)
 				return (errno);
 			if (pid == 0)
 			{
+				if (current.in_redir > 0)
+				{
+					dup2(current.in_redir, STDIN_FILENO);
+					close(current.in_redir);
+				}
+				if (current.out_redir > 0)
+				{
+					dup2(current.out_redir, STDOUT_FILENO);
+					close(current.out_redir);
+				}
 				exec_builtin(current, env);
 				exit(1);
 			}
@@ -80,6 +117,16 @@ int	exec_table(t_cmd *cmd_table, t_map env)
 				return (errno);
 			if (pid == 0)
 			{
+				if (current.in_redir > 0)
+				{
+					dup2(current.in_redir, STDIN_FILENO);
+					close(current.in_redir);
+				}
+				if (current.out_redir > 0)
+				{
+					dup2(current.out_redir, STDOUT_FILENO);
+					close(current.out_redir);
+				}
 				execve(path, current.args, envp);
 				if (errno == ENOENT)
 					exit(127);
