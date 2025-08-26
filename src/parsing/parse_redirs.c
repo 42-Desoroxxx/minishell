@@ -23,9 +23,9 @@ static int	count_redirs(t_token *token, int *in, int *out)
 	{
 		if (token->type == REDIR)
 		{
-			if (ft_str_equal(token->value, "<"))
+			if (ft_str_equal(token->value, "<") || ft_str_equal(token->value, "<<"))
 				(*in)++;
-			if (ft_str_equal(token->value, ">"))
+			if (ft_str_equal(token->value, ">") || ft_str_equal(token->value, ">>"))
 				(*out)++;
 			i++;
 		}
@@ -90,7 +90,7 @@ bool	parse_redirs(t_cmd *cmd, t_token **token, const t_map env)
 		if (ft_strncmp((*token)->value, "<", 2) == 0)
 			cmd->in_redir = parse_redir(*(*token)->next, ++in == in_max);
 		else if (ft_strncmp((*token)->value, "<<", 3) == 0)
-			cmd->in_redir = parse_heredoc(*(*token)->next, ++in == in_max, env);
+			cmd->in_redir = parse_heredoc(*(*token)->next, ++in == in_max, env, 128);
 		else if (ft_strncmp((*token)->value, ">", 2) == 0)
 			cmd->out_redir = parse_overwrite(*(*token)->next, ++out == out_max);
 		else if (ft_strncmp((*token)->value, ">>", 3) == 0)

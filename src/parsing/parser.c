@@ -49,6 +49,7 @@ static bool	build_cmd_line(t_token **token_ptr, const t_map env,
 	return (true);
 }
 
+// TODO: If someone does "<< EOF" this return something, like if there was a cmd
 static const t_cmd	*build_cmd_table(t_token **token_ptr, const t_map env)
 {
 	const int	cmd_count = count_pipes(token_ptr) + 1;

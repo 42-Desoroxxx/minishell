@@ -77,7 +77,7 @@ typedef struct s_cmd
 // --- Lexing ---
 
 // lexer.c
-t_token			*lexer(char *input, const t_map env);
+t_token			*lexer(char *input, const t_map env, int status);
 
 // type_lexer.c
 void			type_pipe(t_lexer *lexer);
@@ -91,11 +91,11 @@ t_token_type	find_type(t_lexer *lexer);
 
 // parser.c
 const t_cmd		*parser(t_token **token_list, const t_map env);
-bool			expand_tokens(t_token *token, const t_map env);
-char			*expand_line(char *line, const t_map env);
+bool			expand_tokens(t_token *token, const t_map env, int status);
+char			*expand_line(char *line, const t_map env, int status);
 void			handle_quotes(char c, t_status *quotes);
 bool			is_possible_char(char c, int i);
-int				parse_heredoc(t_token token, bool last, const t_map env);
+int				parse_heredoc(t_token token, bool last, const t_map env, int status);
 bool			parse_redirs(t_cmd *cmd, t_token **token, const t_map env);
 bool			check_last(t_cmd *cmd);
 bool			parse_words(t_cmd *cmd, t_token **token);

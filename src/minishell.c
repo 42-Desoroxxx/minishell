@@ -43,10 +43,12 @@ int	main(int argc, char *argv[], char *envp[])
 	t_token		*tokens;
 	char		*prompt;
 	char		*line;
+	int			status;
 	const t_map	env = create_env(envp);
 
 	(void)argc;
 	(void)argv;
+	status = 0;
 	if (env.size == (size_t) -1)
 	{
 		perror(SHELL_NAME);
@@ -66,7 +68,7 @@ int	main(int argc, char *argv[], char *envp[])
 		}
 		if (line[0] != ' ')
 			add_history(line);
-		tokens = lexer(line, env);
+		tokens = lexer(line, env, status);
 		free(line);
 		if (tokens != NULL)
 		{
@@ -78,7 +80,7 @@ int	main(int argc, char *argv[], char *envp[])
 			{
 				if (DEBUG)
 					print_cmd_table(cmd_table);
-				exec_table((t_cmd *) cmd_table, env);
+				status = exec_table((t_cmd *) cmd_table, env);
 				free_cmd_table((t_cmd **) &cmd_table);
 			}
 		}

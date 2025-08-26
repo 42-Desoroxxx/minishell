@@ -12,7 +12,7 @@
 
 #include <minishell.h>
 
-static unsigned char	*random_string(void)
+static char	*random_string(void)
 {
 	static unsigned char	string[17 + 1] = {0};
 	int						fd;
@@ -25,20 +25,21 @@ static unsigned char	*random_string(void)
 	while (++i < 16)
 		string[i] = (string[i] % 26) + 'a';
 	close(fd);
-	return (string);
+	return ((char *) string);
 }
 
-static void	read_heredoc_input(int fd, t_token token, const t_map env)
+// TODO: CTRL + D in heredoc simply does not close it
+static void	read_heredoc_input(int fd, t_token token, const t_map env, int status)
 {
 	char	*line;
 
 	while (true)
 	{
-		line = get_next_line(STDIN_FILENO);
+		line = readline("> ");
 		if (line == NULL)
-			continue ;
-		line = expand_line(line, env);
-		if (ft_str_equal(line, token.value) != 0)
+			break ;
+		line = expand_line(line, env, status);
+		if (!ft_str_equal(line, token.value))
 			ft_fprintf(fd, line);
 		else
 			break ;
@@ -47,17 +48,33 @@ static void	read_heredoc_input(int fd, t_token token, const t_map env)
 	free(line);
 }
 
-int	parse_heredoc(t_token token, bool last, const t_map env)
+bool	has_quote(char *value)
 {
-	unsigned char		*rnd_filename;
-	int					fd;
+	int	i;
 
-	rnd_filename = random_string();
+	i = 0;
+	while (value[i])
+	{
+		if (value[i] == '\'')
+			return (true);
+		i++;
+	}
+	return (false);
+}
+
+int	parse_heredoc(t_token token, bool last, const t_map env, int status)
+{
+	char	*rnd_filename;
+	int		fd;
+
+	rnd_filename = ft_strjoin("/tmp/", random_string());
 	fd = open((char *)rnd_filename,
-			O_CREAT | O_TRUNC | S_IRWXU | O_APPEND, __O_TMPFILE, 0644);
+			O_CREAT | O_TRUNC | O_RDWR, 0644);
+	free(rnd_filename);
 	if (fd == 0)
 		return (-2);
-	read_heredoc_input(fd, token, env);
+	if (!has_quote(token.value))
+		read_heredoc_input(fd, token, env, status);
 	if (!last)
 	{
 		close(fd);
