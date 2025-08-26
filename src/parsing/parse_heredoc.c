@@ -40,7 +40,10 @@ static void	read_heredoc_input(int fd, t_token token, const t_map env, int statu
 			break ;
 		line = expand_line(line, env, status);
 		if (!ft_str_equal(line, token.value))
+		{
 			ft_fprintf(fd, line);
+			ft_fprintf(fd, "\n");
+		}
 		else
 			break ;
 		free(line);
