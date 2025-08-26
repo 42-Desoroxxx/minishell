@@ -6,7 +6,7 @@
 /*   By: llage <llage@student.42angouleme.fr>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/30 20:27:04 by llage             #+#    #+#             */
-/*   Updated: 2025/08/25 08:00:25 by llage            ###   ########.fr       */
+/*   Updated: 2025/08/26 05:52:05 by llage            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,6 +63,8 @@ t_map	create_env(char *envp[])
 	int		i;
 
 	env = map_bzero();
+	if (envp == NULL || envp[0] == NULL)
+		return (env);
 	i = 0;
 	while (envp[i])
 	{
@@ -78,4 +80,49 @@ t_map	create_env(char *envp[])
 	}
 	adjust_shell_level(&env);
 	return (env);
+}
+
+void	free_envp(char ***envp_ptr)
+{
+	char	**envp;
+	int		i;
+
+	if (envp_ptr == NULL || *envp_ptr == NULL)
+		return ;
+	i = -1;
+	envp = *envp_ptr;
+	while (envp[++i])
+	{
+		free(envp[i]);
+		envp[i] = NULL;
+	}
+	free(envp);
+	*envp_ptr = NULL;
+}
+
+char	**create_envp(t_map env)
+{
+	char	**envp;
+	size_t	i;
+
+	envp = ft_calloc(env.size + 1, sizeof(char *));
+	if (envp == NULL)
+	{
+		perror(SHELL_NAME);
+		return (NULL);
+	}
+	i = -1;
+	while (++i < env.size)
+	{
+		envp[i] = ft_str_add(envp[i], env.entries[i].key);
+		envp[i] = ft_str_add(envp[i], "=");
+		envp[i] = ft_str_add(envp[i], env.entries[i].value);
+		if (envp[i] == NULL)
+		{
+			perror(SHELL_NAME);
+			free_envp(&envp);
+			return (NULL);
+		}
+	}
+	return (envp);
 }

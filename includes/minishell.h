@@ -6,7 +6,7 @@
 /*   By: llage <llage@student.42angouleme.fr>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/30 20:29:31 by llage             #+#    #+#             */
-/*   Updated: 2025/08/25 09:24:51 by llage            ###   ########.fr       */
+/*   Updated: 2025/08/26 05:48:54 by llage            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,8 +23,12 @@
 # include <linux/limits.h>
 # include <fcntl.h>
 # include <ft_data.h>
+# include <sys/wait.h>
 
-# define DEBUG true
+# ifndef DEBUG
+#  define DEBUG false
+# endif
+
 # define SHELL_NAME "Eepyshell"
 # define ANSI_RED "\001\033[31m\002"
 # define ANSI_GREEN "\001\033[32m\002"
@@ -102,12 +106,18 @@ int				count_pipes(t_token **token_list);
 // path.c
 char			*find_in_path(t_map env, char *name);
 
+// exec.c
+int				exec_table(t_cmd *cmd_table, t_map env);
+
 // --- Utils ---
 
 // env.c
 t_map			create_env(char *envp[]);
+void			free_envp(char ***envp_ptr);
+char			**create_envp(t_map env);
 
 // debug_utils.c
+void			print_char_array(const char *name, char **array);
 void			print_tokens(const t_token token);
 void			print_cmd_table(const t_cmd *cmd_table);
 

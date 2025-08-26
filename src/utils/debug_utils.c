@@ -6,13 +6,13 @@
 /*   By: llage <llage@student.42angouleme.fr>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/12 18:30:00 by llage             #+#    #+#             */
-/*   Updated: 2025/08/14 16:44:48 by llage            ###   ########.fr       */
+/*   Updated: 2025/08/26 06:09:26 by llage            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <minishell.h>
 
-static void	print_char_array(const char *name, char **array)
+void	print_char_array(const char *name, char **array)
 {
 	int	i;
 
@@ -34,7 +34,7 @@ void	print_tokens(const t_token token)
 	ft_printf(ANSI_GREEN SHELL_NAME " [Debug]: Tokens:\n" ANSI_RESET);
 	while (current.next != NULL)
 	{
-		ft_printf(ANSI_GREEN "type: %s value: %s ",
+		ft_printf(ANSI_GREEN "    type: %s value: %s ",
 			token_type[current.type], current.value);
 		if (current.prev != NULL)
 			ft_printf("hasPrevious");
@@ -55,7 +55,7 @@ void	print_cmd_table(const t_cmd *cmd_table)
 	current = cmd_table[i];
 	while (current.args != NULL)
 	{
-		ft_printf(ANSI_GREEN "[%d] ", i);
+		ft_printf(ANSI_GREEN "    [%d]", i);
 		print_char_array(" args:", current.args);
 		ft_printf(" in_redirs: %d out_redirs: %d \n" ANSI_RESET,
 			current.in_redir, current.out_redir);

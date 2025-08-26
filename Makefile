@@ -35,7 +35,7 @@ CC = cc
 CLANG_VERSION := $(shell $(CC) -v 2>&1 | grep -oP 'version \K\d+')
 BASE_FLAGS = -Wall -Wextra -Werror=vla -pedantic-errors -Werror=int-conversion -Werror=incompatible-pointer-types -Werror=implicit-function-declaration -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -flto=thin
 RELEASE_FLAGS = -Werror -O3 -ffast-math -march=native
-DEBUG_FLAGS =  -g -O0 -fno-builtin -mno-omit-leaf-frame-pointer -fno-omit-frame-pointer
+DEBUG_FLAGS =  -g -O0 -fno-builtin -mno-omit-leaf-frame-pointer -fno-omit-frame-pointer -DDEBUG=true
 ifeq ($(shell expr $(CLANG_VERSION) \>= 15), 1)
 	DEBUG_FLAGS += -fstrict-flex-arrays=3
 endif
@@ -76,7 +76,7 @@ SRC_FILES :=	minishell.c \
 				lexing/lexer.c lexing/type_lexer.c \
 				expanding/expand.c expanding/expand_utils.c \
 				parsing/parser.c parsing/parse_heredoc.c parsing/parse_n_count.c parsing/parse_redirs.c \
-				executing/path.c
+				executing/path.c executing/exec.c
 SRCS := $(addprefix $(SRC)/,$(SRC_FILES))
 OBJS := $(patsubst $(SRC)/%.c,$(OBJ)/%.o,$(SRCS))
 
