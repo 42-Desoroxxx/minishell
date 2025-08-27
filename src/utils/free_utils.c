@@ -60,7 +60,7 @@ void	free_cmd_table(t_cmd **cmd_table_ptr)
 	if (cmd_table_ptr == NULL || cmd_table == NULL)
 		return ;
 	i = 0;
-	while (cmd_table[i].args || cmd_table[i].in_redir || cmd_table[i].out_redir)
+	while (cmd_table[i].args != NULL)
 	{
 		free_str_array(&cmd_table[i].args);
 		if (cmd_table[i].in_redir > 0)

@@ -100,6 +100,7 @@ bool			parse_redirs(t_cmd *cmd, t_token **token, const t_map env);
 bool			check_last(t_cmd *cmd);
 bool			parse_words(t_cmd *cmd, t_token **token);
 int				count_pipes(t_token **token_list);
+bool			pipe_my_line(t_cmd *cmd_table, int cmd_count);
 
 // --- Executing ---
 

@@ -71,6 +71,13 @@ static const t_cmd	*build_cmd_table(t_token **token_ptr, const t_map env)
 		if ((*token_ptr)->type == EMPTY)
 			break ;
 	}
+	if(!pipe_my_line(cmd_table, cmd_count))
+	{
+		perror(SHELL_NAME);
+		free_tokens(token_ptr);
+		free_cmd_table(&cmd_table);
+		return (NULL);
+	}
 	return (cmd_table);
 }
 
