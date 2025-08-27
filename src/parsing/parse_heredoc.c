@@ -29,7 +29,8 @@ static char	*random_string(void)
 }
 
 // TODO: CTRL + D in heredoc simply does not close it
-static void	read_heredoc_input(int fd, t_token token, const t_map env, int status)
+static void	read_heredoc_input(int fd, t_token token,
+	const t_map env, int status)
 {
 	char	*line;
 

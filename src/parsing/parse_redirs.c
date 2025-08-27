@@ -23,9 +23,11 @@ static int	count_redirs(t_token *token, int *in, int *out)
 	{
 		if (token->type == REDIR)
 		{
-			if (ft_str_equal(token->value, "<") || ft_str_equal(token->value, "<<"))
+			if (ft_str_equal(token->value, "<")
+				|| ft_str_equal(token->value, "<<"))
 				(*in)++;
-			if (ft_str_equal(token->value, ">") || ft_str_equal(token->value, ">>"))
+			if (ft_str_equal(token->value, ">")
+				|| ft_str_equal(token->value, ">>"))
 				(*out)++;
 			i++;
 		}

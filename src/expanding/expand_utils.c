@@ -39,3 +39,38 @@ bool	is_possible_char(char c, int i)
 		return (false);
 	return (true);
 }
+
+void	copy_value_to_newline(char *new_line, char *value,
+	int *newline_iter, int *value_iter)
+{
+	while (value[*value_iter])
+		new_line[(*newline_iter)++] = value[(*value_iter)++];
+}
+
+void	remove_quotes(char *new_line)
+{
+	int			iter;
+	int			offset;
+	t_status	old_quote;
+	t_status	quotes;
+
+	iter = -1;
+	quotes = NONE;
+	while (new_line[iter + 1])
+	{
+		iter++;
+		if (new_line[iter] != '\'' && new_line[iter] != '"')
+			continue ;
+		old_quote = quotes;
+		handle_quotes(new_line[iter], &quotes);
+		offset = 0;
+		if (old_quote == quotes)
+			continue ;
+		while (new_line[iter + offset])
+		{
+			new_line[iter + offset] = new_line[iter + offset + 1];
+			offset++;
+		}
+		iter--;
+	}
+}

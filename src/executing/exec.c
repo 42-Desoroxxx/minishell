@@ -36,6 +36,8 @@ static int	exec_builtin(t_cmd cmd, t_map env)
 		map_print(&env);
 		return (0);
 	}
+	else if(ft_str_equal(cmd.args[0], "echo"))
+		return (ms_echo(cmd));
 	ft_fprintf(STDERR_FILENO, SHELL_NAME
 		" [Error]: Builtin command not implemented\n");
 	return (1);

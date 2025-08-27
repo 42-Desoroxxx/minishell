@@ -101,6 +101,8 @@ bool			check_last(t_cmd *cmd);
 bool			parse_words(t_cmd *cmd, t_token **token);
 int				count_pipes(t_token **token_list);
 bool			pipe_my_line(t_cmd *cmd_table, int cmd_count);
+void			copy_value_to_newline(char *new_line, char *value, int *newline_iter, int *value_iter);
+void			remove_quotes(char *new_line);
 
 // --- Executing ---
 
@@ -109,6 +111,9 @@ char			*find_in_path(t_map env, char *name);
 
 // exec.c
 int				exec_table(t_cmd *cmd_table, t_map env);
+
+// ms_echo.c
+int				ms_echo(t_cmd cmd_table);
 
 // --- Utils ---
 

@@ -31,8 +31,7 @@ static char	*replace_expand_with_value(char *line, char *expand,
 	{
 		if (line + line_iter == expand)
 		{
-			while (value[value_iter])
-				new_line[newline_iter++] = value[value_iter++];
+			copy_value_to_newline(new_line, value, &newline_iter, &value_iter);
 			line_iter += len;
 		}
 		else
@@ -72,7 +71,8 @@ static char	*isolate_expand(char *line, int *i, const t_map env, int status)
 		new_line = expanding(line, &line[(*i)], j, env);
 	}
 	else
-		new_line = replace_expand_with_value(line, &line[(*i)], ft_itoa(status), 2);
+		new_line = replace_expand_with_value(line,
+				&line[(*i)], ft_itoa(status), 2);
 	*i += j;
 	return (new_line);
 }
@@ -118,6 +118,7 @@ bool	expand_tokens(t_token *token, const t_map env, int status)
 		new_line = expand_line(token->value, env, status);
 		if (new_line == NULL)
 			return (false);
+		remove_quotes(new_line);
 		token->value = new_line;
 		token = token->next;
 	}
