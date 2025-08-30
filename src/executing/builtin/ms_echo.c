@@ -12,6 +12,20 @@
 
 #include <minishell.h>
 
+bool	is_echo_flag(char *str)
+{
+	int	iter;
+
+	iter = 1;
+	if (str[0] != '-')
+		return (false);
+	while (str[iter] && str[iter] == 'n')
+		iter++;
+	if (str[iter] != '\0')
+		return (false);
+	return (true);
+}
+
 int	ms_echo(t_cmd cmd)
 {
 	int		word_iter;
@@ -19,7 +33,7 @@ int	ms_echo(t_cmd cmd)
 
 	word_iter = 1;
 	n_flag = false;
-	if (ft_str_equal(cmd.args[1], "-n"))
+	if (is_echo_flag(cmd.args[1]))
 	{
 		word_iter++;
 		n_flag = true;
@@ -28,6 +42,8 @@ int	ms_echo(t_cmd cmd)
 	{
 		ft_printf(cmd.args[word_iter]);
 		word_iter++;
+		if (cmd.args[word_iter] != NULL)
+			ft_printf(" ");
 	}
 	if (!n_flag)
 		ft_printf("\n");
