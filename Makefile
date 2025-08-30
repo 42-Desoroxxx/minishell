@@ -9,7 +9,7 @@
 # |  $$$$$$/|  $$$$$$/ /$$$$$$$$|  $$$$$$$      | $$ \/  | $$|  $$$$$$$| $$ \  $$|  $$$$$$$  #
 #  \______/  \______/ |________/ \____  $$      |__/     |__/ \_______/|__/  \__/ \_______/  #
 #                                /$$  | $$                                                   #
-#        )))                    |  $$$$$$/                                    Version 1.5    #
+#        )))                    |  $$$$$$/                                    Version 1.6    #
 #       (((                      \______/                                                    #
 #     +-----+                                   __..--''``---....___   _..._    __           #
 #     |     |]      /    //    // //  /// //_.-'    .-/";  `        ``<._  ``.''_ `. / // /  #
@@ -25,21 +25,48 @@ NAME = minishell
 MAKE_MODE ?= release
 
 # Colors
-GREEN = \033[1;32m
-BLUE = \033[1;34m
-RED = \033[1;31m
+GREEN = \033[32m
+BLUE = \033[34m
+RED = \033[31m
 RESET = \033[0m
 
 # Compiler
 CC = cc
-CLANG_VERSION := $(shell $(CC) -v 2>&1 | grep -oP 'version \K\d+')
-BASE_FLAGS = -Wall -Wextra -Werror=vla -pedantic-errors -Werror=int-conversion -Werror=incompatible-pointer-types -Werror=implicit-function-declaration -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -flto=thin
-RELEASE_FLAGS = -Werror -O3 -ffast-math -march=native
-DEBUG_FLAGS =  -g -O0 -fno-builtin -mno-omit-leaf-frame-pointer -fno-omit-frame-pointer -DDEBUG=true
-ifeq ($(shell expr $(CLANG_VERSION) \>= 15), 1)
-	DEBUG_FLAGS += -fstrict-flex-arrays=3
-endif
-SANE_FLAGS = -fsanitize=address,pointer-compare,pointer-subtract,leak,undefined,shift,shift-exponent,shift-base,integer-divide-by-zero,unreachable,vla-bound,null,signed-integer-overflow,bounds,alignment,float-divide-by-zero,float-cast-overflow,nonnull-attribute,returns-nonnull-attribute,bool,enum,pointer-overflow,builtin -fsanitize-address-use-after-scope
+BASE_FLAGS = \
+	-Wall -Wextra \ # Required by 42
+ 	-Werror=vla -pedantic-errors -Werror=int-conversion -Werror=incompatible-pointer-types -Werror=implicit-function-declaration -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations \
+	-MMD \
+	-flto=thin
+RELEASE_FLAGS = \
+	-Werror \ # Required by 42
+	-O3 -ffast-math -march=native
+DEBUG_FLAGS = \
+	-g -O0 -fno-builtin -mno-omit-leaf-frame-pointer -fno-omit-frame-pointer \
+	-DDEBUG=true
+SANE_FLAGS = \
+	-fsanitize=address,pointer-compare,pointer-subtract,leak,undefined,shift,shift-exponent,shift-base,integer-divide-by-zero,unreachable,vla-bound,null,signed-integer-overflow,bounds,alignment,float-divide-by-zero,float-cast-overflow,nonnull-attribute,returns-nonnull-attribute,bool,enum,pointer-overflow,builtin -fsanitize-address-use-after-scope
+
+# Libraries
+LIB_DIRS = libft
+LIB_FILES = libft/libft.a
+LDFLAGS = -lreadline
+
+# Directories
+SRC = src
+OBJ = obj
+INCLUDES = -Iincludes $(foreach lib,$(LIB_DIRS),-I$(lib)/includes)
+
+# Sources
+SRC_FILES := \
+	minishell.c \
+	utils/debug_utils.c utils/free_utils.c utils/env.c \
+	lexing/lexer.c lexing/type_lexer.c \
+	expanding/expand.c expanding/expand_utils.c \
+	parsing/parser.c parsing/parse_heredoc.c parsing/parse_n_count.c parsing/parse_redirs.c parsing/pipeline.c \
+	executing/path.c executing/exec.c executing/builtin/ms_echo.c
+SRCS := $(addprefix $(SRC)/,$(SRC_FILES))
+OBJS := $(patsubst $(SRC)/%.c,$(OBJ)/%.o,$(SRCS))
+
 ifeq ($(MAKE_MODE),release)
 	CFLAGS = $(BASE_FLAGS) $(RELEASE_FLAGS)
     LIB_TARGET = all
@@ -57,28 +84,10 @@ else
 	endif
 endif
 
-# Libraries
-LIB_DIRS = libft
-LIB_FILES = libft/libft.a
-LDFLAGS = -lreadline
-ifeq ($(shell expr $(CLANG_VERSION) \>= 15), 1)
-	LDFLAGS += -fuse-ld=lld
+ifeq ($(shell expr $(shell $(CC) -v 2>&1 | grep -oP 'version \K\d+') \>= 15), 1)
+    DEBUG_FLAGS += -fstrict-flex-arrays=3lla
+    LDFLAGS += -fuse-ld=lld
 endif
-
-# Directories
-SRC = src
-OBJ = obj
-INCLUDES = -Iincludes $(foreach lib,$(LIB_DIRS),-I$(lib)/includes)
-
-# Sources
-SRC_FILES :=	minishell.c \
-				utils/debug_utils.c utils/free_utils.c utils/env.c \
-				lexing/lexer.c lexing/type_lexer.c \
-				expanding/expand.c expanding/expand_utils.c \
-				parsing/parser.c parsing/parse_heredoc.c parsing/parse_n_count.c parsing/parse_redirs.c parsing/pipeline.c \
-				executing/path.c executing/exec.c executing/builtin/ms_echo.c
-SRCS := $(addprefix $(SRC)/,$(SRC_FILES))
-OBJS := $(patsubst $(SRC)/%.c,$(OBJ)/%.o,$(SRCS))
 
 all:
 	@$(MAKE) -j --no-print-directory $(NAME)
@@ -97,6 +106,8 @@ $(OBJ):
 $(OBJ)/%.o: $(SRC)/%.c | $(OBJ)
 	@echo "$(BLUE)Compiling$(RESET) $<..."
 	@$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+
+-include $(OBJS:%.o=%.d)
 
 libs:
 	@echo "$(BLUE)Building libraries in $(MAKE_MODE) mode...$(RESET)"
