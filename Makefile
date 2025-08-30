@@ -9,7 +9,7 @@
 # |  $$$$$$/|  $$$$$$/ /$$$$$$$$|  $$$$$$$      | $$ \/  | $$|  $$$$$$$| $$ \  $$|  $$$$$$$  #
 #  \______/  \______/ |________/ \____  $$      |__/     |__/ \_______/|__/  \__/ \_______/  #
 #                                /$$  | $$                                                   #
-#        )))                    |  $$$$$$/                                    Version 1.6    #
+#        )))                    |  $$$$$$/                                    Version 1.6.1  #
 #       (((                      \______/                                                    #
 #     +-----+                                   __..--''``---....___   _..._    __           #
 #     |     |]      /    //    // //  /// //_.-'    .-/";  `        ``<._  ``.''_ `. / // /  #
@@ -33,12 +33,12 @@ RESET = \033[0m
 # Compiler
 CC = cc
 BASE_FLAGS = \
-	-Wall -Wextra \ # Required by 42
+	-Wall -Wextra \
  	-Werror=vla -pedantic-errors -Werror=int-conversion -Werror=incompatible-pointer-types -Werror=implicit-function-declaration -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations \
 	-MMD \
 	-flto=thin
 RELEASE_FLAGS = \
-	-Werror \ # Required by 42
+	-Werror \
 	-O3 -ffast-math -march=native
 DEBUG_FLAGS = \
 	-g -O0 -fno-builtin -mno-omit-leaf-frame-pointer -fno-omit-frame-pointer \
@@ -85,7 +85,7 @@ else
 endif
 
 ifeq ($(shell expr $(shell $(CC) -v 2>&1 | grep -oP 'version \K\d+') \>= 15), 1)
-    DEBUG_FLAGS += -fstrict-flex-arrays=3lla
+    DEBUG_FLAGS += -fstrict-flex-arrays=3
     LDFLAGS += -fuse-ld=lld
 endif
 
