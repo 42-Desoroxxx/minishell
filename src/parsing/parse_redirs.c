@@ -44,7 +44,9 @@ static int	parse_redir(t_token token, bool last)
 		return (-1);
 	if (last)
 	{
-		fd = open(token.value, O_RDONLY);
+		fd = open(token.value, O_RDONLY | O_CLOEXEC);
+		if (fd < 0)
+			return (-1);
 		return (fd);
 	}
 	return (-2);
@@ -67,13 +69,18 @@ static int	parse_append(t_token token, bool last)
 {
 	int	fd;
 
-	fd = open(token.value, O_WRONLY | O_CREAT | O_APPEND, 0644);
+	fd = open(token.value, O_WRONLY | O_CREAT | O_CLOEXEC | O_APPEND, 0644);
+	if (fd < 0)
+		return (-1);
+	close(fd);
 	if (last)
+	{
+		fd = open(token.value, O_RDONLY | O_CLOEXEC);
+		if (fd < 0)
+			return (-1);
 		return (fd);
-	fd = close(fd);
-	if (fd == 0)
-		return (-2);
-	return (fd);
+	}
+	return (-2);
 }
 
 bool	parse_redirs(t_cmd *cmd, t_token **token, t_shell shell)

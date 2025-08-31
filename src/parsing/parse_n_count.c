@@ -60,12 +60,16 @@ bool	parse_words(t_cmd *cmd, t_token **token)
 	return (true);
 }
 
-bool	check_last(t_cmd *cmd)
+/**
+ * @return false if redirections where handled but all were closed,
+ *         true otherise
+ */
+bool check_last(t_cmd *cmd)
 {
 	if (cmd->in_redir == -2 || cmd->out_redir == -2)
 	{
-		ft_fprintf(STDERR_FILENO,
-			SHELL_NAME " [Error] :  Somehow there was no last...\n");
+		ft_fprintf(STDERR_FILENO, SHELL_NAME ANSI_RED
+			" [Error]:  Somehow there was no last...\n" ANSI_RESET);
 		return (false);
 	}
 	return (true);

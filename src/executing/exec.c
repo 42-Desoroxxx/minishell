@@ -56,13 +56,19 @@ void	exec_table(t_cmd *cmd_table, t_shell *shell)
 	current = cmd_table[i];
 	if (cmd_table[1].args == NULL && is_builtin(current))
 	{
-		int	fd_in_save = dup(STDIN_FILENO);
-		int	fd_out_save = dup(STDOUT_FILENO);
+		int	fd_in_save;
+		int	fd_out_save;
 
 		if (current.in_redir > 0)
+		{
+			fd_in_save = dup(STDIN_FILENO);
 			dup2(current.in_redir, STDIN_FILENO);
+		}
 		if (current.out_redir > 0)
+		{
+			fd_out_save = dup(STDOUT_FILENO);
 			dup2(current.out_redir, STDOUT_FILENO);
+		}
 
 		status = exec_builtin(current, *shell);
 
@@ -133,15 +139,9 @@ void	exec_table(t_cmd *cmd_table, t_shell *shell)
 			if (pid == 0)
 			{
 				if (current.in_redir > 0)
-				{
 					dup2(current.in_redir, STDIN_FILENO);
-					close(current.in_redir);
-				}
 				if (current.out_redir > 0)
-				{
 					dup2(current.out_redir, STDOUT_FILENO);
-					close(current.out_redir);
-				}
 				execve(path, current.args, envp);
 				if (errno == ENOENT)
 					exit(127);

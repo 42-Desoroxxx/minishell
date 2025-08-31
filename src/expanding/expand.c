@@ -116,7 +116,8 @@ bool	expand_tokens(t_token *token, t_shell shell)
 
 	while (token->type != EMPTY)
 	{
-		if (token->type != WORD)
+		if (token->type != WORD
+			|| (token->prev != NULL && token->prev->type == REDIR))
 		{
 			token = token->next;
 			continue ;

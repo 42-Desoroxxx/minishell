@@ -6,50 +6,97 @@
 /*   By: rvitiell <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/25 07:02:48 by rvitiell          #+#    #+#             */
-/*   Updated: 2025/08/31 21:41:41 by llage            ###   ########.fr       */
+/*   Updated: 2025/08/31 23:13:52 by llage            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <minishell.h>
 
+#define RANDOM_STRING_LEN 128
+
 static char	*random_string(void)
 {
-	static unsigned char	string[17 + 1] = {0};
+	static unsigned char	string[RANDOM_STRING_LEN + 1];
 	int						fd;
 	int						i;
 
-	fd = open("/dev/urandom", O_RDONLY);
-	read(fd, string, 16);
+	bzero(string, RANDOM_STRING_LEN + 1);
+	fd = open("/dev/urandom", O_RDONLY | O_CLOEXEC);
+	read(fd, string, RANDOM_STRING_LEN);
 	i = 0;
 	string[i] = '.';
-	while (++i < 16)
+	while (++i < RANDOM_STRING_LEN)
 		string[i] = (string[i] % 26) + 'a';
 	close(fd);
 	return ((char *) string);
 }
 
-static void	read_heredoc_input(int fd, t_token token, t_shell shell)
+static void	count_closed_quotes(int *single_quotes, int *double_quotes,
+	char *delimiter)
 {
-	char	*line;
-	int		line_count;
+	int	i;
+
+	i = -1;
+	*single_quotes = 0;
+	*double_quotes = 0;
+	while (delimiter[++i])
+	{
+		if (delimiter[i] == '\'')
+			(*single_quotes)++;
+		else if (delimiter[i] == '"')
+			(*double_quotes)++;
+	}
+	*single_quotes = *single_quotes - (*single_quotes % 2);
+	*double_quotes = *double_quotes - (*double_quotes % 2);
+}
+
+static char	*remove_closed_quotes(char *delimiter)
+{
+	int		single_quotes;
+	int		double_quotes;
+	int		i;
+	int		j;
+	char	*new_delimiter;
+
+	count_closed_quotes(&single_quotes, &double_quotes, delimiter);
+	new_delimiter = ft_calloc(ft_strlen(delimiter) - single_quotes
+			- double_quotes + 1, sizeof(char));
+	if (new_delimiter == NULL)
+		return (NULL);
+	i = -1;
+	j = -1;
+	while (delimiter[++i])
+	{
+		if ((delimiter[i] == '\'' && single_quotes-- > 0)
+			|| (delimiter[i] == '"' && double_quotes-- > 0))
+			continue ;
+		new_delimiter[++j] = delimiter[i];
+	}
+	return (new_delimiter);
+}
+
+static void	read_heredoc_input(int fd, char *delimiter, bool expand,
+	t_shell shell)
+{
+	char		*line;
+	int			line_count;
 
 	line_count = 0;
 	while (true)
 	{
 		line = readline("> ");
 		if (line == NULL)
-		{
 			ft_fprintf(STDERR_FILENO, "\n" ANSI_YELLOW SHELL_NAME
 				" [WARNING]: Here-document at line %d delimited by end-of-file"
-				" (wanted `%s`)\n" ANSI_RESET, line_count + 1, token.value);
+				" (wanted `%s`)\n" ANSI_RESET, line_count + 1, delimiter);
+		if (line == NULL)
 			break ;
-		}
-		if (!ft_str_equal(line, token.value))
+		if (!ft_str_equal(line, delimiter))
 		{
 			line_count++;
-			line = expand_line(line, shell);
-			ft_fprintf(fd, line);
-			ft_fprintf(fd, "\n");
+			if (expand)
+				line = expand_line(line, shell);
+			ft_fprintf(fd, "%s\n", line);
 		}
 		else
 			break ;
@@ -58,41 +105,32 @@ static void	read_heredoc_input(int fd, t_token token, t_shell shell)
 	free(line);
 }
 
-static bool	has_quote(char *value)
-{
-	int	i;
-
-	i = 0;
-	while (value[i])
-	{
-		if (value[i] == '\'')
-			return (true);
-		i++;
-	}
-	return (false);
-}
-
 int	parse_heredoc(t_token token, bool last, t_shell shell)
 {
-	char	*rnd_filename;
+	char	rnd_filename[5 + RANDOM_STRING_LEN + 1];
+	char	*delimiter;
 	int		fd;
 
-	rnd_filename = ft_strjoin("/tmp/", random_string());
-	fd = open(rnd_filename, O_CREAT | O_TRUNC | O_WRONLY, 0644);
+	delimiter = remove_closed_quotes(token.value);
+	if (delimiter == NULL)
+		return (-1);
+	ft_strlcat(rnd_filename, "/tmp/", 5 + RANDOM_STRING_LEN + 1);
+	ft_strlcat(rnd_filename, random_string(), 5 + RANDOM_STRING_LEN + 1);
+	fd = open(rnd_filename, O_CREAT | O_WRONLY | O_CLOEXEC | O_TRUNC, 0644);
 	if (fd < 0)
-	{
-		free(rnd_filename);
-		return (-2);
-	}
-	if (!has_quote(token.value))
-		read_heredoc_input(fd, token, shell);
+		return (-1);
+	ft_printf(SHELL_NAME ": Here-document, waiting for `%s`\n", delimiter);
+	read_heredoc_input(fd, delimiter,
+		!ft_strchr(token.value, '\'') && !ft_strchr(token.value, '"'), shell);
+	free(delimiter);
 	close(fd);
-	fd = open(rnd_filename, O_RDONLY);
-	free(rnd_filename);
-	if (!last)
+	if (last)
 	{
-		close(fd);
-		return (0);
+		fd = open(rnd_filename, O_RDONLY | O_CLOEXEC);
+		if (fd < 0)
+			return (-1);
+		return (fd);
 	}
-	return (fd);
+	unlink(rnd_filename);
+	return (-2);
 }
