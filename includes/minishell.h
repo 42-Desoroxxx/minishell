@@ -6,7 +6,7 @@
 /*   By: llage <llage@student.42angouleme.fr>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/30 20:29:31 by llage             #+#    #+#             */
-/*   Updated: 2025/08/26 05:48:54 by llage            ###   ########.fr       */
+/*   Updated: 2025/08/30 16:26:23 by llage            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@
 # include <fcntl.h>
 # include <ft_data.h>
 # include <sys/wait.h>
+# include <stdint.h>
 
 # ifndef DEBUG
 #  define DEBUG false
@@ -33,6 +34,7 @@
 # define SHELL_NAME "Eepyshell"
 # define ANSI_RED "\001\033[31m\002"
 # define ANSI_GREEN "\001\033[32m\002"
+# define ANSI_YELLOW "\001\033[33m\002"
 # define ANSI_BLUE "\001\033[34m\002"
 # define ANSI_RESET "\001\033[0m\002"
 
@@ -75,10 +77,16 @@ typedef struct s_cmd
 	bool	heredoc;
 }	t_cmd;
 
+typedef struct s_shell
+{
+	uint8_t	exit_status;
+	t_map	env;
+}	t_shell;
+
 // --- Lexing ---
 
 // lexer.c
-t_token			*lexer(char *input, const t_map env, int status);
+t_token			*lexer(char *input, t_shell shell);
 
 // type_lexer.c
 void			type_pipe(t_lexer *lexer);
@@ -91,13 +99,13 @@ t_token_type	find_type(t_lexer *lexer);
 // --- Parsing ---
 
 // parser.c
-const t_cmd		*parser(t_token **token_list, const t_map env);
-bool			expand_tokens(t_token *token, const t_map env, int status);
-char			*expand_line(char *line, const t_map env, int status);
+const t_cmd		*parser(t_token **token_list, t_shell *shell);
+bool			expand_tokens(t_token *token, t_shell shell);
+char			*expand_line(char *line, t_shell shell);
 void			handle_quotes(char c, t_status *quotes);
 bool			is_possible_char(char c, int i);
-int				parse_heredoc(t_token token, bool last, const t_map env, int status);
-bool			parse_redirs(t_cmd *cmd, t_token **token, const t_map env);
+int				parse_heredoc(t_token token, bool last, t_shell shell);
+bool			parse_redirs(t_cmd *cmd, t_token **token, t_shell shell);
 bool			check_last(t_cmd *cmd);
 bool			parse_words(t_cmd *cmd, t_token **token);
 int				count_pipes(t_token **token_list);
@@ -111,10 +119,13 @@ void			remove_quotes(char *new_line);
 char			*find_in_path(t_map env, char *name);
 
 // exec.c
-int				exec_table(t_cmd *cmd_table, t_map env);
+void			exec_table(t_cmd *cmd_table, t_shell *shell);
 
-// ms_echo.c
-int				ms_echo(t_cmd cmd_table);
+// echo.c
+int				echo(char *args[]);
+
+// pwd.c
+int				pwd(char *args[]);
 
 // --- Utils ---
 

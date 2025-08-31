@@ -6,7 +6,7 @@
 /*   By: llage <llage@student.42angouleme.fr>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/30 20:27:04 by llage             #+#    #+#             */
-/*   Updated: 2025/08/26 06:55:15 by llage            ###   ########.fr       */
+/*   Updated: 2025/08/31 21:27:47 by llage            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,20 @@ static char	*create_prompt(t_map env)
 	return (prompt);
 }
 
+static t_shell	create_shell(char *envp[])
+{
+	t_shell	shell;
+
+	shell.exit_status = 0;
+	shell.env = create_env(envp);
+	if (shell.env.size == (size_t) -1)
+	{
+		perror(SHELL_NAME);
+		exit(EXIT_FAILURE);
+	}
+	return (shell);
+}
+
 // TODO: Signals
 int	main(int argc, char *argv[], char *envp[])
 {
@@ -43,20 +57,15 @@ int	main(int argc, char *argv[], char *envp[])
 	t_token		*tokens;
 	char		*prompt;
 	char		*line;
-	int			status;
-	const t_map	env = create_env(envp);
+	t_shell		shell;
 
 	(void)argc;
 	(void)argv;
-	status = 0;
-	if (env.size == (size_t) -1)
-	{
-		perror(SHELL_NAME);
-		exit(EXIT_FAILURE);
-	}
+	shell = create_shell(envp);
 	while (true)
 	{
-		prompt = create_prompt(env);
+		prompt = create_prompt(shell.env);
+		// TODO: Set the signal handlers
 		line = readline(prompt);
 		free(prompt);
 		if (line == NULL)
@@ -68,23 +77,24 @@ int	main(int argc, char *argv[], char *envp[])
 		}
 		if (line[0] != ' ')
 			add_history(line);
-		tokens = lexer(line, env, status);
+		tokens = lexer(line, shell);
 		free(line);
 		if (tokens != NULL)
 		{
 			if (DEBUG)
 				print_tokens(*tokens);
-			cmd_table = parser(&tokens, env);
+			cmd_table = parser(&tokens, &shell);
 			free_tokens(&tokens);
 			if (cmd_table != NULL)
 			{
 				if (DEBUG)
 					print_cmd_table(cmd_table);
-				status = exec_table((t_cmd *) cmd_table, env);
+				// TODO: Remove the signal handlers meow
+				exec_table((t_cmd *) cmd_table, &shell);
 				free_cmd_table((t_cmd **) &cmd_table);
 			}
 		}
 	}
-	map_free((t_map *) &env);
-	exit(EXIT_SUCCESS);
+	map_free(&shell.env);
+	exit(shell.exit_status);
 }

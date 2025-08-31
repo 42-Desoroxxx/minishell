@@ -6,7 +6,7 @@
 /*   By: llage <llage@student.42angouleme.fr>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 00:04:34 by llage             #+#    #+#             */
-/*   Updated: 2025/08/26 07:00:18 by llage            ###   ########.fr       */
+/*   Updated: 2025/08/31 21:37:39 by llage            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,24 +26,23 @@ static bool	is_builtin(const t_cmd cmd)
 	return (false);
 }
 
-static int	exec_builtin(t_cmd cmd, t_map env)
+static int	exec_builtin(t_cmd cmd, t_shell shell)
 {
-	(void)cmd;
-	(void)env;
-
+	if (ft_str_equal(cmd.args[0], "echo"))
+		return (echo(cmd.args));
+	if (ft_str_equal(cmd.args[0], "pwd"))
+		return (pwd(cmd.args));
 	if (ft_str_equal(cmd.args[0], "env"))
 	{
-		map_print(&env);
+		map_print(&shell.env);
 		return (0);
 	}
-	else if(ft_str_equal(cmd.args[0], "echo"))
-		return (ms_echo(cmd));
-	ft_fprintf(STDERR_FILENO, SHELL_NAME
-		" [Error]: Builtin command not implemented\n");
+	ft_fprintf(STDERR_FILENO, SHELL_NAME ANSI_RED
+		" [Error]: Builtin command not implemented\n" ANSI_RESET);
 	return (1);
 }
 
-int	exec_table(t_cmd *cmd_table, t_map env)
+void	exec_table(t_cmd *cmd_table, t_shell *shell)
 {
 	t_cmd	current;
 	int		i;
@@ -57,24 +56,29 @@ int	exec_table(t_cmd *cmd_table, t_map env)
 	current = cmd_table[i];
 	if (cmd_table[1].args == NULL && is_builtin(current))
 	{
-		int fd_in_save = dup(STDIN_FILENO);
-		int fd_out_save = dup(STDOUT_FILENO);
+		int	fd_in_save = dup(STDIN_FILENO);
+		int	fd_out_save = dup(STDOUT_FILENO);
 
-		dup2(current.in_redir, STDIN_FILENO);
-		dup2(current.out_redir, STDOUT_FILENO);
+		if (current.in_redir > 0)
+			dup2(current.in_redir, STDIN_FILENO);
+		if (current.out_redir > 0)
+			dup2(current.out_redir, STDOUT_FILENO);
 
-		close(current.in_redir);
-		close(current.out_redir);
+		status = exec_builtin(current, *shell);
 
-		status = exec_builtin(current, env);
+		if (current.in_redir > 0)
+		{
+			dup2(fd_in_save, STDIN_FILENO);
+			close(current.in_redir);
+		}
+		if (current.out_redir > 0)
+		{
+			dup2(fd_out_save, STDOUT_FILENO);
+			close(current.out_redir);
+		}
 
-		dup2(fd_in_save, STDIN_FILENO);
-		dup2(fd_out_save, STDOUT_FILENO);
-
-		close(fd_in_save);
-		close(fd_out_save);
-
-		return (status);
+		shell->exit_status = status;
+		return ;
 	}
 	while (current.args != NULL)
 	{
@@ -82,7 +86,10 @@ int	exec_table(t_cmd *cmd_table, t_map env)
 		{
 			pid = fork();
 			if (pid < 0)
-				return (errno);
+			{
+				shell->exit_status = errno;
+				return ;
+			}
 			if (pid == 0)
 			{
 				if (current.in_redir > 0)
@@ -95,28 +102,34 @@ int	exec_table(t_cmd *cmd_table, t_map env)
 					dup2(current.out_redir, STDOUT_FILENO);
 					close(current.out_redir);
 				}
-				exec_builtin(current, env);
-				exit(1);
+				exit(exec_builtin(current, *shell));
 			}
 			if (waitpid(pid, &status, 0) == -1)
-				return (errno);
+			{
+				shell->exit_status = errno;
+				return ;
+			}
 		}
 		else
 		{
 			if (ft_strchr(current.args[0], '/') == NULL)
-				path = find_in_path(env, current.args[0]);
+				path = find_in_path(shell->env, current.args[0]);
 			else
 				path = ft_strdup(current.args[0]);
 			if (path == NULL)
 			{
 				ft_fprintf(STDERR_FILENO, SHELL_NAME
 					": command not found (%s)\n", current.args[0]);
-				return (127);
+				shell->exit_status = 127;
+				return ;
 			}
-			envp = create_envp(env);
+			envp = create_envp(shell->env);
 			pid = fork();
 			if (pid < 0)
-				return (errno);
+			{
+				shell->exit_status = errno;
+				return ;
+			}
 			if (pid == 0)
 			{
 				if (current.in_redir > 0)
@@ -140,7 +153,8 @@ int	exec_table(t_cmd *cmd_table, t_map env)
 			{
 				free_envp(&envp);
 				free(path);
-				return (errno);
+				shell->exit_status = errno;
+				return ;
 			}
 			free_envp(&envp);
 			free(path);
@@ -151,5 +165,5 @@ int	exec_table(t_cmd *cmd_table, t_map env)
 			last_status = 128 + WTERMSIG(status);
 		current = cmd_table[++i];
 	}
-	return (last_status);
+	shell->exit_status = last_status;
 }

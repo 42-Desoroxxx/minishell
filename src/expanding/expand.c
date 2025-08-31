@@ -58,26 +58,32 @@ static char	*expanding(char *line, char *expand, int len, const t_map env)
 	return (new_line);
 }
 
-static char	*isolate_expand(char *line, int *i, const t_map env, int status)
+static char	*isolate_expand(char *line, int *i, t_shell shell)
 {
 	int		j;
 	char	*new_line;
+	char	*value;
 
 	j = 1;
 	if (line[(*i) + j] != '?')
 	{
 		while (line[(*i) + j] && is_possible_char(line[(*i) + j], j))
 			j++;
-		new_line = expanding(line, &line[(*i)], j, env);
+		new_line = expanding(line, &line[(*i)], j, shell.env);
 	}
 	else
-		new_line = replace_expand_with_value(line,
-				&line[(*i)], ft_itoa(status), 2);
+	{
+		value = ft_itoa(shell.exit_status);
+		if (value == NULL)
+			return (NULL);
+		new_line = replace_expand_with_value(line, &line[(*i)], value, 2);
+		free(value);
+	}
 	*i += j;
 	return (new_line);
 }
 
-char	*expand_line(char *line, const t_map env, int status)
+char	*expand_line(char *line, t_shell shell)
 {
 	int			i;
 	t_status	quotes;
@@ -93,7 +99,7 @@ char	*expand_line(char *line, const t_map env, int status)
 		if ((line[i] == '?' || line[i] == '$') && quotes != QUOTE
 			&& is_possible_char(line[i + 1], 1))
 		{
-			new_line = isolate_expand(line, &i, env, status);
+			new_line = isolate_expand(line, &i, shell);
 			if (new_line == NULL)
 				return (NULL);
 		}
@@ -104,7 +110,7 @@ char	*expand_line(char *line, const t_map env, int status)
 	return (new_line);
 }
 
-bool	expand_tokens(t_token *token, const t_map env, int status)
+bool	expand_tokens(t_token *token, t_shell shell)
 {
 	char	*new_line;
 
@@ -115,7 +121,7 @@ bool	expand_tokens(t_token *token, const t_map env, int status)
 			token = token->next;
 			continue ;
 		}
-		new_line = expand_line(token->value, env, status);
+		new_line = expand_line(token->value, shell);
 		if (new_line == NULL)
 			return (false);
 		remove_quotes(new_line);

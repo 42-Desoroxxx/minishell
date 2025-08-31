@@ -12,40 +12,41 @@
 
 #include <minishell.h>
 
-bool	is_echo_flag(char *str)
+static bool	should_have_newline(const char *str)
 {
-	int	iter;
+	int	i;
 
-	iter = 1;
-	if (str[0] != '-')
-		return (false);
-	while (str[iter] && str[iter] == 'n')
-		iter++;
-	if (str[iter] != '\0')
-		return (false);
-	return (true);
+	if (str[0] != '-' || str[1] != 'n')
+		return (true);
+	i = 1;
+	while (str[i] && str[i] == 'n')
+		i++;
+	if (str[i] != '\0')
+		return (true);
+	return (false);
 }
 
-int	ms_echo(t_cmd cmd)
+int	echo(char *args[])
 {
-	int		word_iter;
-	bool	n_flag;
+	bool	newline;
+	int			i;
 
-	word_iter = 1;
-	n_flag = false;
-	if (is_echo_flag(cmd.args[1]))
+	if (args[1] == NULL)
 	{
-		word_iter++;
-		n_flag = true;
+		ft_printf("\n");
+		return (0);
 	}
-	while (cmd.args[word_iter] != NULL)
+	i = 0;
+	newline = should_have_newline(args[1]);
+	if (!newline)
+		++i;
+	while (args[++i] != NULL)
 	{
-		ft_printf(cmd.args[word_iter]);
-		word_iter++;
-		if (cmd.args[word_iter] != NULL)
+		ft_printf(args[i]);
+		if (args[i + 1] != NULL)
 			ft_printf(" ");
 	}
-	if (!n_flag)
+	if (newline)
 		ft_printf("\n");
 	return (0);
 }

@@ -76,7 +76,7 @@ static int	parse_append(t_token token, bool last)
 	return (fd);
 }
 
-bool	parse_redirs(t_cmd *cmd, t_token **token, const t_map env)
+bool	parse_redirs(t_cmd *cmd, t_token **token, t_shell shell)
 {
 	int	in;
 	int	out;
@@ -92,7 +92,7 @@ bool	parse_redirs(t_cmd *cmd, t_token **token, const t_map env)
 		if (ft_strncmp((*token)->value, "<", 2) == 0)
 			cmd->in_redir = parse_redir(*(*token)->next, ++in == in_max);
 		else if (ft_strncmp((*token)->value, "<<", 3) == 0)
-			cmd->in_redir = parse_heredoc(*(*token)->next, ++in == in_max, env, 128);
+			cmd->in_redir = parse_heredoc(*(*token)->next, ++in == in_max, shell);
 		else if (ft_strncmp((*token)->value, ">", 2) == 0)
 			cmd->out_redir = parse_overwrite(*(*token)->next, ++out == out_max);
 		else if (ft_strncmp((*token)->value, ">>", 3) == 0)

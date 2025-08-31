@@ -6,7 +6,7 @@
 /*   By: rvitiell <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/25 07:02:48 by rvitiell          #+#    #+#             */
-/*   Updated: 2025/08/26 09:34:50 by llage            ###   ########.fr       */
+/*   Updated: 2025/08/31 21:41:41 by llage            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,20 +28,26 @@ static char	*random_string(void)
 	return ((char *) string);
 }
 
-// TODO: CTRL + D in heredoc simply does not close it
-static void	read_heredoc_input(int fd, t_token token,
-	const t_map env, int status)
+static void	read_heredoc_input(int fd, t_token token, t_shell shell)
 {
 	char	*line;
+	int		line_count;
 
+	line_count = 0;
 	while (true)
 	{
 		line = readline("> ");
 		if (line == NULL)
+		{
+			ft_fprintf(STDERR_FILENO, "\n" ANSI_YELLOW SHELL_NAME
+				" [WARNING]: Here-document at line %d delimited by end-of-file"
+				" (wanted `%s`)\n" ANSI_RESET, line_count + 1, token.value);
 			break ;
-		line = expand_line(line, env, status);
+		}
 		if (!ft_str_equal(line, token.value))
 		{
+			line_count++;
+			line = expand_line(line, shell);
 			ft_fprintf(fd, line);
 			ft_fprintf(fd, "\n");
 		}
@@ -66,7 +72,7 @@ static bool	has_quote(char *value)
 	return (false);
 }
 
-int	parse_heredoc(t_token token, bool last, const t_map env, int status)
+int	parse_heredoc(t_token token, bool last, t_shell shell)
 {
 	char	*rnd_filename;
 	int		fd;
@@ -79,7 +85,7 @@ int	parse_heredoc(t_token token, bool last, const t_map env, int status)
 		return (-2);
 	}
 	if (!has_quote(token.value))
-		read_heredoc_input(fd, token, env, status);
+		read_heredoc_input(fd, token, shell);
 	close(fd);
 	fd = open(rnd_filename, O_RDONLY);
 	free(rnd_filename);

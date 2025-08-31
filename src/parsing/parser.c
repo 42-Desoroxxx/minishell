@@ -6,7 +6,7 @@
 /*   By: rvitiell <rvitiell@student.42angouleme.fr> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/31 03:18:16 by rvitiell          #+#    #+#             */
-/*   Updated: 2025/08/14 16:44:11 by llage            ###   ########.fr       */
+/*   Updated: 2025/08/30 23:11:49 by llage            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,32 +14,33 @@
 
 static void	check_pipe(t_token *token, t_token **token_list)
 {
-	if (token->next->type == EMPTY
-		|| token->prev == NULL || token->prev->type != WORD)
+	if (token->prev == NULL
+		|| token->prev->type != WORD || token->next->type != WORD)
 	{
-		ft_fprintf(STDERR_FILENO,
-			"Syntax error near unexpected token '|'\n");
+		ft_fprintf(STDERR_FILENO, SHELL_NAME
+			": Syntax error near unexpected token '|'\n");
 		free_tokens(token_list);
 	}
 }
 
 static void	check_redir(t_token *token, t_token **token_list)
 {
-	if (token->next->type != WORD)
+	if (token->prev == NULL
+		|| token->prev->type != WORD || token->next->type != WORD)
 	{
-		ft_fprintf(STDERR_FILENO,
-			"Syntax error near unexpected token newline\n");
+		ft_fprintf(STDERR_FILENO, SHELL_NAME
+			": Syntax error near unexpected token newline\n");
 		free_tokens(token_list);
 	}
 }
 
-static bool	build_cmd_line(t_token **token_ptr, const t_map env,
+static bool	build_cmd_line(t_token **token_ptr, t_shell shell,
 		t_cmd *cmd_table, int i)
 {
 	if ((*token_ptr)->type == PIPE)
 		*token_ptr = (*token_ptr)->next;
 	if (!parse_words(&cmd_table[i], token_ptr)
-		|| !parse_redirs(&cmd_table[i], token_ptr, env))
+		|| !parse_redirs(&cmd_table[i], token_ptr, shell))
 	{
 		perror(SHELL_NAME);
 		free_tokens(token_ptr);
@@ -50,7 +51,7 @@ static bool	build_cmd_line(t_token **token_ptr, const t_map env,
 }
 
 // TODO: If someone does "<< EOF" this return something, like if there was a cmd
-static const t_cmd	*build_cmd_table(t_token **token_ptr, const t_map env)
+static const t_cmd	*build_cmd_table(t_token **token_ptr, t_shell shell)
 {
 	const int	cmd_count = count_pipes(token_ptr) + 1;
 	t_cmd		*cmd_table;
@@ -66,7 +67,7 @@ static const t_cmd	*build_cmd_table(t_token **token_ptr, const t_map env)
 	i = -1;
 	while (++i < cmd_count)
 	{
-		if (!build_cmd_line(token_ptr, env, cmd_table, i))
+		if (!build_cmd_line(token_ptr, shell, cmd_table, i))
 			return (NULL);
 		if ((*token_ptr)->type == EMPTY)
 			break ;
@@ -81,7 +82,7 @@ static const t_cmd	*build_cmd_table(t_token **token_ptr, const t_map env)
 	return (cmd_table);
 }
 
-const t_cmd	*parser(t_token **token_list, const t_map env)
+const t_cmd	*parser(t_token **token_list, t_shell *shell)
 {
 	t_token	*token;
 
@@ -93,8 +94,11 @@ const t_cmd	*parser(t_token **token_list, const t_map env)
 		else if (token->type == PIPE)
 			check_pipe(token, token_list);
 		if (*token_list == NULL)
+		{
+			shell->exit_status = 2;
 			return (NULL);
+		}
 		token = token->next;
 	}
-	return (build_cmd_table(token_list, env));
+	return (build_cmd_table(token_list, *shell));
 }

@@ -77,7 +77,7 @@ static bool	get_type_tokenize(t_lexer *lexer,
 	return (true);
 }
 
-t_token	*lexer(char *line, const t_map env, int status)
+t_token	*lexer(char *line, t_shell shell)
 {
 	t_token			*token;
 	t_lexer			lexer;
@@ -90,7 +90,7 @@ t_token	*lexer(char *line, const t_map env, int status)
 	while (type != EMPTY)
 		if (!get_type_tokenize(&lexer, &type, &token))
 			return (NULL);
-	if (!expand_tokens(token, env, status))
+	if (!expand_tokens(token, shell))
 	{
 		perror(SHELL_NAME);
 		free_tokens(&token);

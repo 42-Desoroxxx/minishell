@@ -63,7 +63,8 @@ SRC_FILES := \
 	lexing/lexer.c lexing/type_lexer.c \
 	expanding/expand.c expanding/expand_utils.c \
 	parsing/parser.c parsing/parse_heredoc.c parsing/parse_n_count.c parsing/parse_redirs.c parsing/pipeline.c \
-	executing/path.c executing/exec.c executing/builtin/ms_echo.c
+	executing/path.c executing/exec.c \
+	executing/builtin/echo.c executing/builtin/pwd.c
 SRCS := $(addprefix $(SRC)/,$(SRC_FILES))
 OBJS := $(patsubst $(SRC)/%.c,$(OBJ)/%.o,$(SRCS))
 
