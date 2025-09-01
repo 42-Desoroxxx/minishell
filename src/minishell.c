@@ -70,14 +70,14 @@ int	main(int argc, char *argv[], char *envp[])
 		free(prompt);
 		if (line == NULL)
 			break ;
-		if (line[0] == '\0')
+		if (*skip_whitespace(line) == '\0')
 		{
 			free(line);
 			continue ;
 		}
 		if (line[0] != ' ')
 			add_history(line);
-		tokens = lexer(line, shell);
+		tokens = lexer(line);
 		free(line);
 		if (tokens != NULL)
 		{

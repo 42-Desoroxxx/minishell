@@ -86,7 +86,7 @@ typedef struct s_shell
 // --- Lexing ---
 
 // lexer.c
-t_token			*lexer(char *input, t_shell shell);
+t_token			*lexer(char *input);
 
 // type_lexer.c
 void			type_pipe(t_lexer *lexer);
@@ -100,7 +100,7 @@ t_token_type	find_type(t_lexer *lexer);
 
 // parser.c
 const t_cmd		*parser(t_token **token_list, t_shell *shell);
-bool			expand_tokens(t_token *token, t_shell shell);
+bool			expand_tokens(t_token **token_list, t_shell shell);
 char			*expand_line(char *line, t_shell shell);
 void			handle_quotes(char c, t_status *quotes);
 bool			is_possible_char(char c, int i);

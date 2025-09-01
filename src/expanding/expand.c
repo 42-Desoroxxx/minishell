@@ -52,8 +52,6 @@ static char	*expanding(char *line, char *expand, int len, const t_map env)
 	ft_strlcpy(new_line, expand + 1, len);
 	value = map_get(&env, new_line);
 	free(new_line);
-	if (value == NULL)
-		return (NULL);
 	new_line = replace_expand_with_value(line, expand, value, len);
 	return (new_line);
 }
@@ -96,9 +94,11 @@ char	*expand_line(char *line, t_shell shell)
 	{
 		if (line[i] == '\'' || line[i] == '"')
 			handle_quotes(line[i], &quotes);
-		if ((line[i] == '?' || line[i] == '$') && quotes != QUOTE
-			&& is_possible_char(line[i + 1], 1))
+		if ((line[i] == '?' || line[i] == '$')
+			&& quotes != QUOTE && is_possible_char(line[i + 1], 1))
 		{
+			if (new_line != NULL)
+				ft_safe_free((void *) &new_line);
 			new_line = isolate_expand(line, &i, shell);
 			if (new_line == NULL)
 				return (NULL);
@@ -110,14 +110,61 @@ char	*expand_line(char *line, t_shell shell)
 	return (new_line);
 }
 
-bool	expand_tokens(t_token *token, t_shell shell)
+static void	count_closed_quotes(int *single_quotes, int *double_quotes,
+	char *delimiter)
+{
+	int	i;
+
+	i = -1;
+	*single_quotes = 0;
+	*double_quotes = 0;
+	while (delimiter[++i])
+	{
+		if (delimiter[i] == '\'')
+			(*single_quotes)++;
+		else if (delimiter[i] == '"')
+			(*double_quotes)++;
+	}
+	*single_quotes = *single_quotes - (*single_quotes % 2);
+	*double_quotes = *double_quotes - (*double_quotes % 2);
+}
+
+static char	*remove_closed_quotes(char *delimiter)
+{
+	int		single_quotes;
+	int		double_quotes;
+	int		i;
+	int		j;
+	char	*new_delimiter;
+
+	count_closed_quotes(&single_quotes, &double_quotes, delimiter);
+	new_delimiter = ft_calloc(ft_strlen(delimiter) - single_quotes
+			- double_quotes + 1, sizeof(char));
+	if (new_delimiter == NULL)
+		return (NULL);
+	i = -1;
+	j = -1;
+	while (delimiter[++i])
+	{
+		if ((delimiter[i] == '\'' && single_quotes-- > 0)
+			|| (delimiter[i] == '"' && double_quotes-- > 0))
+			continue ;
+		new_delimiter[++j] = delimiter[i];
+	}
+	return (new_delimiter);
+}
+
+bool	expand_tokens(t_token **token_list, t_shell shell)
 {
 	char	*new_line;
+	t_token	*token;
+	t_token	*tmp;
 
+	token = *token_list;
 	while (token->type != EMPTY)
 	{
-		if (token->type != WORD
-			|| (token->prev != NULL && token->prev->type == REDIR))
+		if (token->type != WORD || token->value[0] != '$'
+			|| (token->prev != NULL && token->prev->type == REDIR && ft_str_equal(token->prev->value, "<<")))
 		{
 			token = token->next;
 			continue ;
@@ -125,7 +172,39 @@ bool	expand_tokens(t_token *token, t_shell shell)
 		new_line = expand_line(token->value, shell);
 		if (new_line == NULL)
 			return (false);
-		remove_quotes(new_line);
+		if (new_line[0] == '\0')
+		{
+			free(new_line);
+			if (token->prev != NULL)
+			{
+				token->prev->next = token->next;
+				token->next->prev = token->prev;
+			}
+			else
+			{
+				token->next->prev = NULL;
+				*token_list = token->next;
+			}
+			tmp = token;
+			token = token->next;
+			free(tmp);
+			continue ;
+		}
+		token->value = new_line;
+		token = token->next;
+	}
+	token = *token_list;
+	while (token->type != EMPTY)
+	{
+		if (token->type != WORD)
+		{
+			token = token->next;
+			continue ;
+		}
+		new_line = remove_closed_quotes(token->value);
+		if (new_line == NULL)
+			return (false);
+		free(token->value);
 		token->value = new_line;
 		token = token->next;
 	}

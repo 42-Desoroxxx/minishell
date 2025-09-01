@@ -14,7 +14,7 @@
 
 static void	lvl_to_level(int lvl, char *new_level)
 {
-	bzero(new_level, 5);
+	ft_bzero(new_level, 5);
 	if (lvl < 10)
 		new_level[0] = lvl + '0';
 	else if (lvl < 100)
@@ -43,13 +43,13 @@ static void	adjust_shell_level(t_map *env)
 	if (lvl >= 1000)
 	{
 		ft_fprintf(STDERR_FILENO, SHELL_NAME
-			" [WARNING]: Shell level (%d) too high, resetting to 1\n", lvl);
+			" [Warning]: Shell level (%d) too high, resetting to 1\n", lvl);
 		lvl = 1;
 	}
 	else if (lvl < 0)
 	{
 		ft_fprintf(STDERR_FILENO, SHELL_NAME
-			" [WARNING]: Shell level (%d) too low, resetting to 0\n", lvl);
+			" [Warning]: Shell level (%d) too low, resetting to 0\n", lvl);
 		lvl = 0;
 	}
 	lvl_to_level(lvl, new_level);

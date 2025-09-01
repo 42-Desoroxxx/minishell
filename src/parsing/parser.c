@@ -100,5 +100,13 @@ const t_cmd	*parser(t_token **token_list, t_shell *shell)
 		}
 		token = token->next;
 	}
+	if (!expand_tokens(token_list, *shell))
+	{
+		perror(SHELL_NAME);
+		free_tokens(token_list);
+		return (NULL);
+	}
+	if (DEBUG)
+		print_tokens(**token_list);
 	return (build_cmd_table(token_list, *shell));
 }

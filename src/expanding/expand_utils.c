@@ -6,7 +6,7 @@
 /*   By: rvitiell <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/24 20:52:16 by rvitiell          #+#    #+#             */
-/*   Updated: 2025/08/24 20:52:18 by rvitiell         ###   ########.fr       */
+/*   Updated: 2025/09/01 02:49:58 by llage            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ bool	is_possible_char(char c, int i)
 {
 	if (i == 1 && ft_isdigit(c))
 		return (false);
-	if (c == '"' || c == '\'' || c == ' ')
+	if (c == '"' || c == '\'' || c == ' ' || c == '\0')
 		return (false);
 	return (true);
 }
@@ -43,6 +43,8 @@ bool	is_possible_char(char c, int i)
 void	copy_value_to_newline(char *new_line, char *value,
 	int *newline_iter, int *value_iter)
 {
+	if (value == NULL)
+		return ;
 	while (value[*value_iter])
 		new_line[(*newline_iter)++] = value[(*value_iter)++];
 }

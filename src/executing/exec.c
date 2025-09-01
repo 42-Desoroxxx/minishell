@@ -37,7 +37,7 @@ static int	exec_builtin(t_cmd cmd, t_shell shell)
 		map_print(&shell.env);
 		return (0);
 	}
-	ft_fprintf(STDERR_FILENO, SHELL_NAME ANSI_RED
+	ft_fprintf(STDERR_FILENO, ANSI_RED SHELL_NAME
 		" [Error]: Builtin command not implemented\n" ANSI_RESET);
 	return (1);
 }
