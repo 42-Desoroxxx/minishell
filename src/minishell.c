@@ -53,7 +53,7 @@ static t_shell	create_shell(char *envp[])
 // TODO: Signals
 int	main(int argc, char *argv[], char *envp[])
 {
-	const t_cmd_table	*cmd_table;
+	t_cmd_table	*cmd_table;
 	t_token				*tokens;
 	char				*prompt;
 	char				*line;

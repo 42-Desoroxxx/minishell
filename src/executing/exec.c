@@ -44,7 +44,7 @@ static int	exec_builtin(t_cmd cmd, t_shell *shell)
 	return (1);
 }
 
-void exec_table(const t_cmd_table *cmd_table, t_shell *shell)
+void exec_table(t_cmd_table *cmd_table, t_shell *shell)
 {
     t_cmd  current;
     size_t    i;
@@ -82,14 +82,14 @@ void exec_table(const t_cmd_table *cmd_table, t_shell *shell)
             dup2(fd_in_save, STDIN_FILENO);
             close(fd_in_save);
             close(current.in_redir);
-        	current.in_redir = 0;
+        	cmd_table->cmds[0].in_redir = 0;
         }
         if (current.out_redir > 0)
         {
             dup2(fd_out_save, STDOUT_FILENO);
             close(fd_out_save);
             close(current.out_redir);
-        	current.out_redir = 0;
+        	cmd_table->cmds[0].out_redir = 0;
         }
 
         shell->exit_status = status;
@@ -129,12 +129,12 @@ void exec_table(const t_cmd_table *cmd_table, t_shell *shell)
             if (current.in_redir > 0)
 			{
 				close(current.in_redir);
-            	current.in_redir = 0;
+            	cmd_table->cmds[i].in_redir = 0;
 			}
             if (current.out_redir > 0)
 			{
 				close(current.out_redir);
-            	current.out_redir = 0;
+            	cmd_table->cmds[i].out_redir = 0;
 			}
 
             pids[npids++] = pid;
@@ -189,12 +189,12 @@ void exec_table(const t_cmd_table *cmd_table, t_shell *shell)
             if (current.in_redir > 0)
 			{
 				close(current.in_redir);
-            	current.in_redir = 0;
+            	cmd_table->cmds[i].in_redir = 0;
 			}
             if (current.out_redir > 0)
             {
 	            close(current.out_redir);
-            	current.out_redir = 0;
+            	cmd_table->cmds[i].out_redir = 0;
             }
 
             pids[npids++] = pid;

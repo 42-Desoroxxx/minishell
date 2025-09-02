@@ -43,7 +43,7 @@ static bool	build_cmd_line(t_token **token_ptr, t_shell shell, t_cmd *cmd)
 	return (true);
 }
 
-static const t_cmd_table	*build_cmd_table(t_token **token_ptr, t_shell shell)
+static t_cmd_table	*build_cmd_table(t_token **token_ptr, t_shell shell)
 {
 	const int	cmd_count = count_pipes(token_ptr) + 1;
 	t_cmd_table	*cmd_table;
@@ -80,7 +80,7 @@ static const t_cmd_table	*build_cmd_table(t_token **token_ptr, t_shell shell)
 	return (cmd_table);
 }
 
-const t_cmd_table	*parser(t_token **token_list, t_shell *shell)
+t_cmd_table	*parser(t_token **token_list, t_shell *shell)
 {
 	t_token	*token;
 

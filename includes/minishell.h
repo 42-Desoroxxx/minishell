@@ -105,7 +105,7 @@ t_token_type		find_type(t_lexer *lexer);
 // --- Parsing ---
 
 // parser.c
-const t_cmd_table	*parser(t_token **token_list, t_shell *shell);
+t_cmd_table	*parser(t_token **token_list, t_shell *shell);
 bool				expand_tokens(t_token **token_list, t_shell shell);
 char				*expand_line(char *line, t_shell shell);
 void				handle_quotes(char c, t_status *quotes);
@@ -125,7 +125,7 @@ void				remove_quotes(char *new_line);
 char				*find_in_path(t_map env, char *name);
 
 // exec.c
-void				exec_table(const t_cmd_table *cmd_table, t_shell *shell);
+void				exec_table(t_cmd_table *cmd_table, t_shell *shell);
 
 // echo.c
 int					echo(char *args[]);
