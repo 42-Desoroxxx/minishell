@@ -51,23 +51,22 @@ void	free_tokens(t_token **token_ptr)
 	*token_ptr = NULL;
 }
 
-void	free_cmd_table(t_cmd **cmd_table_ptr)
+void	free_cmd_table(t_cmd_table **cmd_table_ptr)
 {
-	t_cmd	*cmd_table;
-	size_t	i;
+	t_cmd_table	*cmd_table;
+	size_t		i;
 
 	cmd_table = *cmd_table_ptr;
 	if (cmd_table_ptr == NULL || cmd_table == NULL)
 		return ;
-	i = 0;
-	while (cmd_table[i].args != NULL)
+	i = -1;
+	while (++i < cmd_table->size)
 	{
-		free_str_array(&cmd_table[i].args);
-		if (cmd_table[i].in_redir > 0)
-			close(cmd_table[i].in_redir);
-		if (cmd_table[i].out_redir > 0)
-			close(cmd_table[i].out_redir);
-		i++;
+		free_str_array(&cmd_table->cmds[i].args);
+		if (cmd_table->cmds[i].in_redir > 0)
+			close(cmd_table->cmds[i].in_redir);
+		if (cmd_table->cmds[i].out_redir > 0)
+			close(cmd_table->cmds[i].out_redir);
 	}
 	free(cmd_table);
 	*cmd_table_ptr = NULL;

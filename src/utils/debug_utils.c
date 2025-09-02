@@ -45,20 +45,19 @@ void	print_tokens(const t_token token)
 	}
 }
 
-void	print_cmd_table(const t_cmd *cmd_table)
+void	print_cmd_table(const t_cmd_table *cmd_table)
 {
 	t_cmd	current;
-	int		i;
+	size_t	i;
 
 	ft_printf(ANSI_GREEN SHELL_NAME " [Debug]: Command Table:\n" ANSI_RESET);
-	i = 0;
-	current = cmd_table[i];
-	while (current.args != NULL)
+	i = -1;
+	while (++i < cmd_table->size)
 	{
+		current = cmd_table->cmds[i];
 		ft_printf(ANSI_GREEN "    [%d]", i);
 		print_char_array(" args:", current.args);
 		ft_printf(" in_redirs: %d out_redirs: %d \n" ANSI_RESET,
 			current.in_redir, current.out_redir);
-		current = cmd_table[++i];
 	}
 }

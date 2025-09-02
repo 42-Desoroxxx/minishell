@@ -12,43 +12,36 @@
 
 #include <minishell.h>
 
-static int	count_redirs(t_token *token, int *in, int *out)
+static int	count_redirs(t_token token, int *in, int *out)
 {
 	int	i;
 
 	i = 0;
 	*in = 0;
 	*out = 0;
-	while (token->type != PIPE && token->type != EMPTY)
+	while (token.type != PIPE && token.type != EMPTY)
 	{
-		if (token->type == REDIR)
+		if (token.type == REDIR)
 		{
-			if (ft_str_equal(token->value, "<")
-				|| ft_str_equal(token->value, "<<"))
+			if (ft_str_equal(token.value, "<")
+				|| ft_str_equal(token.value, "<<"))
 				(*in)++;
-			if (ft_str_equal(token->value, ">")
-				|| ft_str_equal(token->value, ">>"))
+			if (ft_str_equal(token.value, ">")
+				|| ft_str_equal(token.value, ">>"))
 				(*out)++;
 			i++;
 		}
-		token = token->next->next;
+		token = *token.next->next; // ? this feels hyper wrong holy shit
 	}
 	return (i);
 }
 
 static int	parse_redir(t_token token, bool last)
 {
-	int	fd;
-
 	if (access(token.value, F_OK) == -1)
 		return (-1);
 	if (last)
-	{
-		fd = open(token.value, O_RDONLY | O_CLOEXEC);
-		if (fd < 0)
-			return (-1);
-		return (fd);
-	}
+		return (open(token.value, O_RDONLY | O_CLOEXEC));
 	return (-2);
 }
 
@@ -56,34 +49,29 @@ static int	parse_overwrite(t_token token, bool last)
 {
 	int	fd;
 
-	fd = open(token.value, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+	fd = open(token.value, O_CREAT | O_WRONLY | O_CLOEXEC | O_TRUNC, 0644);
+	if (fd < 0)
+		return (-1);
 	if (last)
 		return (fd);
-	fd = close(fd);
-	if (fd == 0)
-		return (-2);
-	return (fd);
+	close(fd);
+	return (-2);
 }
 
 static int	parse_append(t_token token, bool last)
 {
 	int	fd;
 
-	fd = open(token.value, O_WRONLY | O_CREAT | O_CLOEXEC | O_APPEND, 0644);
+	fd = open(token.value, O_CREAT | O_WRONLY | O_CLOEXEC | O_APPEND, 0644);
 	if (fd < 0)
 		return (-1);
-	close(fd);
 	if (last)
-	{
-		fd = open(token.value, O_RDONLY | O_CLOEXEC);
-		if (fd < 0)
-			return (-1);
 		return (fd);
-	}
+	close(fd);
 	return (-2);
 }
 
-bool	parse_redirs(t_cmd *cmd, t_token **token, t_shell shell)
+bool	parse_redirs(t_cmd *cmd, t_token token, t_shell shell)
 {
 	int	in;
 	int	out;
@@ -91,20 +79,20 @@ bool	parse_redirs(t_cmd *cmd, t_token **token, t_shell shell)
 	int	out_max;
 	int	count;
 
-	count = count_redirs(*token, &in_max, &out_max);
+	count = count_redirs(token, &in_max, &out_max);
 	in = 0;
 	out = 0;
 	while (count != 0)
 	{
-		if (ft_strncmp((*token)->value, "<", 2) == 0)
-			cmd->in_redir = parse_redir(*(*token)->next, ++in == in_max);
-		else if (ft_strncmp((*token)->value, "<<", 3) == 0)
-			cmd->in_redir = parse_heredoc(*(*token)->next, ++in == in_max, shell);
-		else if (ft_strncmp((*token)->value, ">", 2) == 0)
-			cmd->out_redir = parse_overwrite(*(*token)->next, ++out == out_max);
-		else if (ft_strncmp((*token)->value, ">>", 3) == 0)
-			cmd->out_redir = parse_append(*(*token)->next, ++out == out_max);
-		(*token) = (*token)->next->next;
+		if (ft_strncmp(token.value, "<", 2) == 0)
+			cmd->in_redir = parse_redir(*token.next, ++in == in_max);
+		else if (ft_strncmp(token.value, "<<", 3) == 0)
+			cmd->in_redir = parse_heredoc(*token.next, ++in == in_max, shell);
+		else if (ft_strncmp(token.value, ">", 2) == 0)
+			cmd->out_redir = parse_overwrite(*token.next, ++out == out_max);
+		else if (ft_strncmp(token.value, ">>", 3) == 0)
+			cmd->out_redir = parse_append(*token.next, ++out == out_max);
+		token = *token.next->next; // ? this seems wrong
 		if (cmd->in_redir == -1 || cmd->out_redir == -1)
 			return (false);
 		count--;

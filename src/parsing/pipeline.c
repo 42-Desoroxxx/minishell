@@ -12,25 +12,24 @@
 
 #include <minishell.h>
 
-bool	pipe_my_line(t_cmd *cmd_table, int cmd_count)
+bool	pipe_my_line(t_cmd_table *cmd_table)
 {
-	int	i;
-	int	pipefd[2];
+	size_t	i;
+	int		pipes[2];
 
-	i = 0;
-	while (i <= cmd_count - 1)
+	i = -1;
+	while (++i < cmd_table->size - 1)
 	{
-		if (pipe(pipefd) == -1)
+		if (pipe(pipes) == -1) // ?
 			return (false);
-		if (i < cmd_count - 1 && cmd_table[i].out_redir == 0)
-			cmd_table[i].out_redir = pipefd[0];
+		if (cmd_table->cmds[i].out_redir == 0)
+			cmd_table->cmds[i].out_redir = pipes[1];
 		else
-			close(pipefd[0]);
-		if (i <= cmd_count - 2 && cmd_table[i + 1].in_redir == 0)
-			cmd_table[i + 1].in_redir = pipefd[1];
+			close(pipes[1]);
+		if (cmd_table->cmds[i + 1].in_redir == 0)
+			cmd_table->cmds[i + 1].in_redir = pipes[0];
 		else
-			close(pipefd[1]);
-		i++;
+			close(pipes[0]);
 	}
 	return (true);
 }

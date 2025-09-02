@@ -34,45 +34,43 @@ static void	check_redir(t_token *token, t_token **token_list)
 	}
 }
 
-static bool	build_cmd_line(t_token **token_ptr, t_shell shell,
-		t_cmd *cmd_table, int i)
+static bool	build_cmd_line(t_token **token_ptr, t_shell shell, t_cmd *cmd)
 {
 	if ((*token_ptr)->type == PIPE)
 		*token_ptr = (*token_ptr)->next;
-	if (!parse_words(&cmd_table[i], token_ptr)
-		|| !parse_redirs(&cmd_table[i], token_ptr, shell))
-	{
-		perror(SHELL_NAME);
-		free_tokens(token_ptr);
-		free_cmd_table(&cmd_table);
+	if (!parse_words(cmd, token_ptr) || !parse_redirs(cmd, **token_ptr, shell))
 		return (false);
-	}
 	return (true);
 }
 
-// TODO: If someone does "<< EOF" this return something, like if there was a cmd
-static const t_cmd	*build_cmd_table(t_token **token_ptr, t_shell shell)
+static const t_cmd_table	*build_cmd_table(t_token **token_ptr, t_shell shell)
 {
 	const int	cmd_count = count_pipes(token_ptr) + 1;
-	t_cmd		*cmd_table;
+	t_cmd_table	*cmd_table;
 	int			i;
 
-	cmd_table = ft_calloc(cmd_count + 1, sizeof(t_cmd));
+	cmd_table = ft_calloc(1, sizeof(t_cmd_table) + (cmd_count * sizeof(t_cmd)));
 	if (cmd_table == NULL)
 	{
 		perror(SHELL_NAME);
 		free_tokens(token_ptr);
 		return (NULL);
 	}
+	cmd_table->size = cmd_count;
 	i = -1;
 	while (++i < cmd_count)
 	{
-		if (!build_cmd_line(token_ptr, shell, cmd_table, i))
+		if (!build_cmd_line(token_ptr, shell, &cmd_table->cmds[i]))
+		{
+			perror(SHELL_NAME);
+			free_tokens(token_ptr);
+			free_cmd_table(&cmd_table);
 			return (NULL);
+		}
 		if ((*token_ptr)->type == EMPTY)
 			break ;
 	}
-	if (!pipe_my_line(cmd_table, cmd_count))
+	if (!pipe_my_line(cmd_table))
 	{
 		perror(SHELL_NAME);
 		free_tokens(token_ptr);
@@ -82,7 +80,7 @@ static const t_cmd	*build_cmd_table(t_token **token_ptr, t_shell shell)
 	return (cmd_table);
 }
 
-const t_cmd	*parser(t_token **token_list, t_shell *shell)
+const t_cmd_table	*parser(t_token **token_list, t_shell *shell)
 {
 	t_token	*token;
 

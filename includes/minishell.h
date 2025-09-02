@@ -32,6 +32,7 @@
 # endif
 
 # define SHELL_NAME "Eepyshell"
+
 # define ANSI_RED "\001\033[31m\002"
 # define ANSI_GREEN "\001\033[32m\002"
 # define ANSI_YELLOW "\001\033[33m\002"
@@ -74,8 +75,13 @@ typedef struct s_cmd
 	char	**args;
 	int		in_redir;
 	int		out_redir;
-	bool	heredoc;
 }	t_cmd;
+
+typedef struct s_cmd_table
+{
+	size_t	size;
+	t_cmd	cmds[];
+}	t_cmd_table;
 
 typedef struct s_shell
 {
@@ -86,62 +92,65 @@ typedef struct s_shell
 // --- Lexing ---
 
 // lexer.c
-t_token			*lexer(char *input);
+t_token				*lexer(char *input);
 
 // type_lexer.c
-void			type_pipe(t_lexer *lexer);
-void			type_exp(t_lexer *lexer);
-void			type_word(t_lexer *lexer);
-void			type_redir(t_lexer *lexer);
-void			link_token_back(t_token *last_token, t_token *new_token);
-t_token_type	find_type(t_lexer *lexer);
+void				type_pipe(t_lexer *lexer);
+void				type_exp(t_lexer *lexer);
+void				type_word(t_lexer *lexer);
+void				type_redir(t_lexer *lexer);
+void				link_token_back(t_token *last_token, t_token *new_token);
+t_token_type		find_type(t_lexer *lexer);
 
 // --- Parsing ---
 
 // parser.c
-const t_cmd		*parser(t_token **token_list, t_shell *shell);
-bool			expand_tokens(t_token **token_list, t_shell shell);
-char			*expand_line(char *line, t_shell shell);
-void			handle_quotes(char c, t_status *quotes);
-bool			is_possible_char(char c, int i);
-int				parse_heredoc(t_token token, bool last, t_shell shell);
-bool			parse_redirs(t_cmd *cmd, t_token **token, t_shell shell);
-bool			check_last(t_cmd *cmd);
-bool			parse_words(t_cmd *cmd, t_token **token);
-int				count_pipes(t_token **token_list);
-bool			pipe_my_line(t_cmd *cmd_table, int cmd_count);
-void			copy_value_to_newline(char *new_line, char *value, int *newline_iter, int *value_iter);
-void			remove_quotes(char *new_line);
+const t_cmd_table	*parser(t_token **token_list, t_shell *shell);
+bool				expand_tokens(t_token **token_list, t_shell shell);
+char				*expand_line(char *line, t_shell shell);
+void				handle_quotes(char c, t_status *quotes);
+bool				is_possible_char(char c, int i);
+int					parse_heredoc(t_token token, bool last, t_shell shell);
+bool				parse_redirs(t_cmd *cmd, t_token token, t_shell shell);
+bool				check_last(t_cmd *cmd);
+bool				parse_words(t_cmd *cmd, t_token **token);
+int					count_pipes(t_token **token_list);
+bool				pipe_my_line(t_cmd_table *cmd_table);
+void				copy_value_to_newline(char *new_line, char *value, int *newline_iter, int *value_iter);
+void				remove_quotes(char *new_line);
 
 // --- Executing ---
 
 // path.c
-char			*find_in_path(t_map env, char *name);
+char				*find_in_path(t_map env, char *name);
 
 // exec.c
-void			exec_table(t_cmd *cmd_table, t_shell *shell);
+void				exec_table(const t_cmd_table *cmd_table, t_shell *shell);
 
 // echo.c
-int				echo(char *args[]);
+int					echo(char *args[]);
 
 // pwd.c
-int				pwd(char *args[]);
+int					pwd(char *args[]);
+
+// unset.c
+int					unset(char *args[], t_map *env);
 
 // --- Utils ---
 
 // env.c
-t_map			create_env(char *envp[]);
-void			free_envp(char ***envp_ptr);
-char			**create_envp(t_map env);
+t_map				create_env(char *envp[]);
+void				free_envp(char ***envp_ptr);
+char				**create_envp(t_map env);
 
 // debug_utils.c
-void			print_char_array(const char *name, char **array);
-void			print_tokens(const t_token token);
-void			print_cmd_table(const t_cmd *cmd_table);
+void				print_char_array(const char *name, char **array);
+void				print_tokens(const t_token token);
+void				print_cmd_table(const t_cmd_table *cmd_table);
 
 // free_utils.c
-void			free_str_array(char ***array_ptr);
-void			free_cmd_table(t_cmd **cmd_table_ptr);
-void			free_tokens(t_token **token_list);
+void				free_str_array(char ***array_ptr);
+void				free_cmd_table(t_cmd_table **cmd_table_ptr);
+void				free_tokens(t_token **token_list);
 
 #endif
