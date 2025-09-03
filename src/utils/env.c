@@ -12,28 +12,9 @@
 
 #include <minishell.h>
 
-static void	lvl_to_level(int lvl, char *new_level)
-{
-	ft_bzero(new_level, 5);
-	if (lvl < 10)
-		new_level[0] = lvl + '0';
-	else if (lvl < 100)
-	{
-		new_level[0] = (lvl / 10) + '0';
-		new_level[1] = (lvl % 10) + '0';
-	}
-	else if (lvl < 1000)
-	{
-		new_level[0] = (lvl / 100) + '0';
-		new_level[1] = ((lvl % 100) / 10) + '0';
-		new_level[2] = ((lvl % 100) % 10) + '0';
-	}
-}
-
 static void	adjust_shell_level(t_map *env)
 {
 	const char	*old_level = map_get(env, "SHLVL");
-	char		new_level[5];
 	int			lvl;
 
 	if (old_level != NULL)
@@ -52,8 +33,7 @@ static void	adjust_shell_level(t_map *env)
 			" [Warning]: Shell level (%d) too low, resetting to 0\n", lvl);
 		lvl = 0;
 	}
-	lvl_to_level(lvl, new_level);
-	map_set(env, "SHLVL", new_level);
+	map_set(env, "SHLVL", ft_byte_to_str(lvl));
 }
 
 t_map	create_env(char *envp[])

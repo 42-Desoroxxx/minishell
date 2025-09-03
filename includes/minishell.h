@@ -6,7 +6,7 @@
 /*   By: llage <llage@student.42angouleme.fr>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/30 20:29:31 by llage             #+#    #+#             */
-/*   Updated: 2025/08/30 16:26:23 by llage            ###   ########.fr       */
+/*   Updated: 2025/09/03 19:13:05 by llage            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,7 @@
 # define ANSI_GREEN "\001\033[32m\002"
 # define ANSI_YELLOW "\001\033[33m\002"
 # define ANSI_BLUE "\001\033[34m\002"
+# define ANSI_CYAN "\001\033[36m\002"
 # define ANSI_RESET "\001\033[0m\002"
 
 typedef enum e_token_type
@@ -105,7 +106,7 @@ t_token_type		find_type(t_lexer *lexer);
 // --- Parsing ---
 
 // parser.c
-t_cmd_table	*parser(t_token **token_list, t_shell *shell);
+t_cmd_table			*parser(t_token **token_list, t_shell *shell);
 bool				expand_tokens(t_token **token_list, t_shell shell);
 char				*expand_line(char *line, t_shell shell);
 void				handle_quotes(char c, t_status *quotes);
