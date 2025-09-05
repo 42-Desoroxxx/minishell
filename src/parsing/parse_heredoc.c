@@ -20,7 +20,7 @@ static char	*random_string(void)
 	int						fd;
 	int						i;
 
-	bzero(string, RANDOM_STRING_LEN + 1);
+	ft_bzero(string, RANDOM_STRING_LEN + 1);
 	fd = open("/dev/urandom", O_RDONLY | O_CLOEXEC);
 	if (read(fd, string, RANDOM_STRING_LEN) < 0)
 		close(close(fd));
@@ -29,7 +29,6 @@ static char	*random_string(void)
 	while (++i < RANDOM_STRING_LEN)
 		string[i] = (string[i] % 26) + 'a';
 	close(fd);
-	printf("%s\n", string);
 	return ((char *) string);
 }
 
@@ -78,6 +77,7 @@ int	parse_heredoc(t_token *token, bool last, t_shell *shell)
 	delimiter = remove_closed_quotes(token->value);
 	if (delimiter == NULL)
 		return (-1);
+	ft_bzero(rnd_filename, 5 + RANDOM_STRING_LEN + 1);
 	ft_strlcat(rnd_filename, "/tmp/", 5 + RANDOM_STRING_LEN + 1);
 	ft_strlcat(rnd_filename, random_string(), 5 + RANDOM_STRING_LEN + 1);
 	fd = open(rnd_filename, O_CREAT | O_WRONLY | O_CLOEXEC | O_TRUNC, 0644);
