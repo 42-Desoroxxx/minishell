@@ -92,6 +92,8 @@ bool	parse_redirs(t_cmd *cmd, t_token **token_ptr, t_shell *shell)
 			cmd->out_redir = parse_append((*token_ptr)->next, ++out == out_max);
 		*token_ptr = (*token_ptr)->next->next;
 		if (cmd->in_redir == -1 || cmd->out_redir == -1)
+			shell->exit_status = 1;
+		if (cmd->in_redir == -1 || cmd->out_redir == -1)
 			return (false);
 		total--;
 	}

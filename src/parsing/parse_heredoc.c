@@ -51,7 +51,7 @@ static void	read_heredoc_input(int fd, char *delimiter, bool expand,
 		{
 			line_count++;
 			if (expand)
-				line = expand_line(line, shell);
+				line = expand_str(line, shell);
 			ft_fprintf(fd, "%s\n", line);
 		}
 		else
@@ -82,7 +82,7 @@ int	parse_heredoc(t_token *token, bool last, t_shell *shell)
 	if (fd < 0)
 		return (-1);
 	ft_printf(SHELL_NAME ": Here-document, waiting for `%s`\n", delimiter);
-	read_heredoc_input(fd, delimiter, should_expand(delimiter), shell);
+	read_heredoc_input(fd, delimiter, should_expand(token->value), shell);
 	free(delimiter);
 	close(fd);
 	if (last)

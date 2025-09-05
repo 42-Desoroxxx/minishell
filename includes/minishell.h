@@ -151,23 +151,20 @@ char
 
 // expand.c
 char
-*expand_line(char *line, t_shell *shell);
+*expand_str(char *str, t_shell *shell);
 
 bool
 expand_tokens(t_token **token_list, t_shell *shell);
 
 // expand_utils.c
+bool
+is_quote(char c);
+
 void
 handle_quotes(char c, t_status *quotes);
 
 bool
-is_possible_char(char c, int i);
-
-void
-copy_value(char *new_line, char *value, int *newline_i, int *value_i);
-
-void
-remove_quotes(char *new_line);
+is_possible_char(char c);
 
 // --- Executing ---
 

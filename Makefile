@@ -37,8 +37,9 @@ BASE_FLAGS = \
  	-Werror=vla -pedantic-errors -Werror=int-conversion -Werror=incompatible-pointer-types -Werror=implicit-function-declaration -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations \
 	-MMD \
 	-flto=thin
+# Compiling with optimizations simply does not work
 RELEASE_FLAGS = \
-	-Werror \
+	-Werror #\
 	-O3 -ffast-math -march=native
 DEBUG_FLAGS = \
 	-g -O0 -fno-builtin -mno-omit-leaf-frame-pointer -fno-omit-frame-pointer \

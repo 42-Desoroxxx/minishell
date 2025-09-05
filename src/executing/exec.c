@@ -43,7 +43,7 @@ static int	exec_builtin(t_cmd *cmd, t_shell *shell)
 	if (ft_str_equal(cmd->args[0], "exit"))
 	{
 		ft_fprintf(STDERR_FILENO, "exit");
-		exit((uint8_t) ft_atoi(cmd->args[1]));
+		exit((uint8_t) ft_atol(cmd->args[1]));
 	}
 	return (1);
 }
@@ -85,6 +85,25 @@ static void	exec_lonely_builtin(t_cmd *cmd, t_shell *shell)
 	}
 	shell->exit_status = exec_builtin(cmd, shell);
 	restore_redirs(cmd, fd_in_backup, fd_out_backup);
+}
+
+static char	*get_path(t_cmd *cmd, t_shell *shell)
+{
+	char	*path;
+
+	path = NULL;
+	if (cmd->args[0][0] != '\0' && ft_strchr(cmd->args[0], '/') == NULL)
+		path = find_in_path(shell->env, cmd->args[0]);
+	else if (cmd->args[0][0] != '\0')
+		path = ft_strdup(cmd->args[0]);
+	if (path == NULL || path[0] == '\0')
+	{
+		ft_fprintf(STDERR_FILENO, ANSI_RED SHELL_NAME " [Error]: "
+			"command not found (%s)\n" ANSI_RESET, cmd->args[0]);
+		shell->exit_status = 127;
+		return (NULL);
+	}
+	return (path);
 }
 
 void	exec_table(t_cmd_table *cmd_table, t_shell *shell)
@@ -156,29 +175,13 @@ void	exec_table(t_cmd_table *cmd_table, t_shell *shell)
         else
         {
             char **envp;
-            char *path;
 
         	if (current->args == NULL || current->args[0] == NULL)
         		continue ;
-        	path = NULL;
-            if (current->args[0][0] != '\0' && ft_strchr(current->args[0], '/') == NULL)
-                path = find_in_path(shell->env, current->args[0]);
-            else if (current->args[0][0] != '\0')
-                path = ft_strdup(current->args[0]);
-            if (path == NULL || path[0] == '\0')
-            {
-                ft_fprintf(STDERR_FILENO, ANSI_RED SHELL_NAME "[Error]: "
-					"command not found (%s)\n" ANSI_RESET, current->args[0]);
-                shell->exit_status = 127;
-            	free(pids);
-                return ;
-            }
-
             envp = create_envp(shell->env);
             pid = fork();
             if (pid < 0)
             {
-                free(path);
                 free_envp(&envp);
                 shell->exit_status = errno;
             	perror(SHELL_NAME);
@@ -187,6 +190,9 @@ void	exec_table(t_cmd_table *cmd_table, t_shell *shell)
             }
             if (pid == 0)
             {
+            	char *path = get_path(current, shell);
+            	if (path == NULL)
+            		exit(127);
 				signal(SIGQUIT, SIG_DFL);
 				signal(SIGINT, SIG_DFL);
 				if (current->in_redir > 0)
@@ -201,6 +207,7 @@ void	exec_table(t_cmd_table *cmd_table, t_shell *shell)
             			close(cmd_table->cmds[j].out_redir);
             	}
                 execve(path, current->args, envp);
+            	free(path);
                 if (errno == ENOENT)
                     exit(127);
                 if (errno == EACCES)
@@ -222,10 +229,8 @@ void	exec_table(t_cmd_table *cmd_table, t_shell *shell)
             pids[npids++] = pid;
 
             free_envp(&envp);
-            free(path);
         }
     }
-
 
     for (int j = 0; j < npids; j++)
     {

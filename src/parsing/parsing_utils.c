@@ -12,19 +12,23 @@
 
 #include <minishell.h>
 
-static void	count_closed_quotes(int *single_quotes, int *double_quotes,
+static void	count_quotes_to_close(int *single_quotes, int *double_quotes,
 	char *str)
 {
-	int	i;
+	t_status	quotes;
+	int			i;
 
 	i = -1;
 	*single_quotes = 0;
 	*double_quotes = 0;
+	quotes = NONE;
 	while (str[++i])
 	{
-		if (str[i] == '\'')
+		if (is_quote(str[i]))
+			handle_quotes(str[i], &quotes);
+		if (str[i] == '\'' && quotes != DOUBLE)
 			(*single_quotes)++;
-		else if (str[i] == '"')
+		else if (str[i] == '"' && quotes != QUOTE)
 			(*double_quotes)++;
 	}
 	*single_quotes = *single_quotes - (*single_quotes % 2);
@@ -33,25 +37,29 @@ static void	count_closed_quotes(int *single_quotes, int *double_quotes,
 
 char	*remove_closed_quotes(char *str)
 {
-	int		single_quotes;
-	int		double_quotes;
-	int		i;
-	int		j;
-	char	*new_delimiter;
+	t_status	quotes;
+	int			single_quotes;
+	int			double_quotes;
+	int			i;
+	int			j;
+	char		*result;
 
-	count_closed_quotes(&single_quotes, &double_quotes, str);
-	new_delimiter = ft_calloc(ft_strlen(str) - single_quotes
+	count_quotes_to_close(&single_quotes, &double_quotes, str);
+	result = ft_calloc(ft_strlen(str) - single_quotes
 			- double_quotes + 1, sizeof(char));
-	if (new_delimiter == NULL)
+	if (result == NULL)
 		return (NULL);
 	i = -1;
 	j = -1;
+	quotes = NONE;
 	while (str[++i])
 	{
-		if ((str[i] == '\'' && single_quotes-- > 0)
-			|| (str[i] == '"' && double_quotes-- > 0))
+		if (is_quote(str[i]))
+			handle_quotes(str[i], &quotes);
+		if ((str[i] == '\'' && quotes != DOUBLE && single_quotes-- > 0)
+			|| (str[i] == '"' && quotes != QUOTE && double_quotes-- > 0))
 			continue ;
-		new_delimiter[++j] = str[i];
+		result[++j] = str[i];
 	}
-	return (new_delimiter);
+	return (result);
 }

@@ -12,24 +12,51 @@
 
 #include <minishell.h>
 
-static void	check_pipe(t_token *token, t_token **token_list)
+static void	check_word(t_token *token, t_token **token_list)
 {
-	if (token->prev == NULL
-		|| token->prev->type != WORD || token->next->type != WORD)
+	t_status	quotes;
+	int			single_quotes;
+	int			double_quotes;
+	int			i;
+
+	i = -1;
+	single_quotes = 0;
+	double_quotes = 0;
+	quotes = NONE;
+	while (token->value[++i])
 	{
-		ft_fprintf(STDERR_FILENO, SHELL_NAME
-			": Syntax error near unexpected token '|'\n");
+		if (is_quote(token->value[i]))
+			handle_quotes(token->value[i], &quotes);
+		if (token->value[i] == '\'' && quotes != DOUBLE)
+			single_quotes++;
+		else if (token->value[i] == '"' && quotes != QUOTE)
+			double_quotes++;
+	}
+	if (single_quotes % 2 != 0 || double_quotes % 2 != 0)
+	{
+		ft_fprintf(STDERR_FILENO, ANSI_RED SHELL_NAME
+			" [Error]: Syntax error, unclosed quotes\n" ANSI_RESET);
 		free_tokens(token_list);
 	}
 }
 
 static void	check_redir(t_token *token, t_token **token_list)
 {
-	if (token->prev == NULL
-		|| token->prev->type != WORD || token->next->type != WORD)
+	if (token->next->type != WORD)
 	{
-		ft_fprintf(STDERR_FILENO, SHELL_NAME
-			": Syntax error near unexpected token newline\n");
+		ft_fprintf(STDERR_FILENO, ANSI_RED SHELL_NAME
+			" [Error]: Syntax error near unexpected token newline\n" ANSI_RESET);
+		free_tokens(token_list);
+	}
+}
+
+static void	check_pipe(t_token *token, t_token **token_list)
+{
+	if (token->prev == NULL || token->prev->type != WORD
+		|| token->next->type == EMPTY)
+	{
+		ft_fprintf(STDERR_FILENO, ANSI_RED SHELL_NAME
+			" [Error]: Syntax error near unexpected token '|'\n" ANSI_RESET);
 		free_tokens(token_list);
 	}
 }
@@ -38,8 +65,14 @@ static bool	build_cmd_line(t_token **token_ptr, t_shell *shell, t_cmd *cmd)
 {
 	if ((*token_ptr)->type == PIPE)
 		*token_ptr = (*token_ptr)->next;
-	if (!parse_words(cmd, token_ptr) || !parse_redirs(cmd, token_ptr, shell))
-		return (false);
+	if ((*token_ptr)->type == REDIR)
+	{
+		if (!parse_redirs(cmd, token_ptr, shell) || !parse_words(cmd, token_ptr))
+			return (false);
+	}
+	else
+		if (!parse_words(cmd, token_ptr) || !parse_redirs(cmd, token_ptr, shell))
+			return (false);
 	return (true);
 }
 
@@ -73,7 +106,9 @@ t_cmd_table	*parser(t_token **token_list, t_shell *shell)
 	token = *token_list;
 	while (token->next)
 	{
-		if (token->type == REDIR)
+		if (token->type == WORD)
+			check_word(token, token_list);
+		else if (token->type == REDIR)
 			check_redir(token, token_list);
 		else if (token->type == PIPE)
 			check_pipe(token, token_list);

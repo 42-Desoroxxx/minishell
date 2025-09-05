@@ -12,6 +12,13 @@
 
 #include <minishell.h>
 
+bool	is_quote(char c)
+{
+	if (c == '\'' || c == '"')
+		return (true);
+	return (false);
+}
+
 void	handle_quotes(char c, t_status *quotes)
 {
 	if (c == '"')
@@ -28,50 +35,11 @@ void	handle_quotes(char c, t_status *quotes)
 		else if (*quotes == QUOTE)
 			*quotes = NONE;
 	}
-	return ;
 }
 
-bool	is_possible_char(char c, int i)
+bool	is_possible_char(char c)
 {
-	if (i == 1 && ft_isdigit(c))
-		return (false);
-	if (c == '"' || c == '\'' || c == ' ' || c == '\0')
+	if (c == ' ' || c == '\0' || c == '0')
 		return (false);
 	return (true);
-}
-
-void	copy_value(char *new_line, char *value, int *newline_i, int *value_i)
-{
-	if (value == NULL)
-		return ;
-	while (value[*value_i])
-		new_line[(*newline_i)++] = value[(*value_i)++];
-}
-
-void	remove_quotes(char *new_line)
-{
-	int			iter;
-	int			offset;
-	t_status	old_quote;
-	t_status	quotes;
-
-	iter = -1;
-	quotes = NONE;
-	while (new_line[iter + 1])
-	{
-		iter++;
-		if (new_line[iter] != '\'' && new_line[iter] != '"')
-			continue ;
-		old_quote = quotes;
-		handle_quotes(new_line[iter], &quotes);
-		offset = 0;
-		if (old_quote == quotes)
-			continue ;
-		while (new_line[iter + offset])
-		{
-			new_line[iter + offset] = new_line[iter + offset + 1];
-			offset++;
-		}
-		iter--;
-	}
 }
