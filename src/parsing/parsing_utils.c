@@ -12,6 +12,28 @@
 
 #include <minishell.h>
 
+int	count_redirs(t_token *token, int *in, int *out)
+{
+	int	total;
+
+	total = 0;
+	*in = 0;
+	*out = 0;
+	while (token != NULL && token->type != PIPE && token->type != EMPTY)
+	{
+		if (token->type == REDIR)
+		{
+			if (ft_strncmp(token->value, "<", 1) == 0)
+				(*in)++;
+			if (ft_strncmp(token->value, ">", 1) == 0)
+				(*out)++;
+			total++;
+		}
+		token = token->next->next;
+	}
+	return (total);
+}
+
 static int	count_quotes_to_close(char *str)
 {
 	t_status	quotes;
@@ -25,8 +47,7 @@ static int	count_quotes_to_close(char *str)
 	quotes = NONE;
 	while (str[++i])
 	{
-		if (is_quote(str[i]))
-			handle_quotes(str[i], &quotes);
+		handle_quotes(str[i], &quotes);
 		if (str[i] == '\'' && quotes != DOUBLE)
 			single_quotes++;
 		else if (str[i] == '"' && quotes != QUOTE)
@@ -53,8 +74,7 @@ char	*remove_closed_quotes(char *str)
 	quotes = NONE;
 	while (str[++i])
 	{
-		if (is_quote(str[i]))
-			handle_quotes(str[i], &quotes);
+		handle_quotes(str[i], &quotes);
 		if ((str[i] == '\'' && quotes != DOUBLE)
 			|| (str[i] == '"' && quotes != QUOTE))
 			continue ;

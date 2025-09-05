@@ -88,12 +88,7 @@ int	parse_heredoc(t_token *token, bool last, t_shell *shell)
 	free(delimiter);
 	close(fd);
 	if (last)
-	{
-		fd = open(rnd_filename, O_RDONLY | O_CLOEXEC);
-		if (fd < 0)
-			return (-1);
-		return (fd);
-	}
+		return (open(rnd_filename, O_RDONLY | O_CLOEXEC));
 	unlink(rnd_filename);
 	return (-2);
 }

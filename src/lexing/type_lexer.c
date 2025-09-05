@@ -40,7 +40,8 @@ void	type_word(t_lexer *lexer)
 	{
 		lexer_status(lexer);
 		c = lexer->line[lexer->cursor + lexer->offset];
-		if (!c || ((c == ' ' || c == '|' || c == '<' || c == '>') && lexer->status == NONE))
+		if (!c || ((c == ' ' || c == '|' || c == '<' || c == '>')
+				&& lexer->status == NONE))
 			break ;
 		lexer->offset++;
 	}

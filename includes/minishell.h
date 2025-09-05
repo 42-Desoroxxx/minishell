@@ -144,6 +144,9 @@ bool
 pipe_my_line(t_cmd_table *cmd_table);
 
 // parsing_utils.c
+int
+count_redirs(t_token *token, int *in, int *out);
+
 char
 *remove_closed_quotes(char *str);
 
@@ -157,6 +160,12 @@ bool
 expand_tokens(t_token **token_ptr, t_shell *shell);
 
 // expand_utils.c
+char
+*get_expand_key(char *str, int start);
+
+char
+*get_expand_value(char	*key, t_status quotes, t_shell *shell);
+
 bool
 is_quote(char c);
 
@@ -164,7 +173,7 @@ void
 handle_quotes(char c, t_status *quotes);
 
 bool
-is_possible_char(char c);
+is_valid_char(char c);
 
 // --- Executing ---
 
