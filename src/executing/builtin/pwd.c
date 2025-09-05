@@ -14,9 +14,9 @@
 
 int	pwd(char *args[])
 {
-	(void)args;
 	const char	*cwd = getcwd(NULL, 0);
 
+	(void)args;
 	ft_printf("%s\n", cwd);
 	free((void *)cwd);
 	return (0);

@@ -29,7 +29,7 @@ static bool	should_have_newline(const char *str)
 int	echo(char *args[])
 {
 	bool	newline;
-	int			i;
+	int		i;
 
 	if (args[1] == NULL)
 	{

@@ -64,7 +64,7 @@ bool	parse_words(t_cmd *cmd, t_token **token_ptr)
  * @return false if redirections where handled but all were closed,
  *         true otherise
  */
-bool check_last(t_cmd *cmd)
+bool	check_last(t_cmd *cmd)
 {
 	if (cmd->in_redir == -2 || cmd->out_redir == -2)
 	{

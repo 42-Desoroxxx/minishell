@@ -143,6 +143,10 @@ parse_heredoc(t_token *token, bool last, t_shell *shell);
 bool
 pipe_my_line(t_cmd_table *cmd_table);
 
+// parsing_utils.c
+char
+*remove_closed_quotes(char *str);
+
 // --- Expanding ---
 
 // expand.c

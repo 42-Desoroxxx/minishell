@@ -110,50 +110,6 @@ char	*expand_line(char *line, t_shell *shell)
 	return (new_line);
 }
 
-static void	count_closed_quotes(int *single_quotes, int *double_quotes,
-	char *delimiter)
-{
-	int	i;
-
-	i = -1;
-	*single_quotes = 0;
-	*double_quotes = 0;
-	while (delimiter[++i])
-	{
-		if (delimiter[i] == '\'')
-			(*single_quotes)++;
-		else if (delimiter[i] == '"')
-			(*double_quotes)++;
-	}
-	*single_quotes = *single_quotes - (*single_quotes % 2);
-	*double_quotes = *double_quotes - (*double_quotes % 2);
-}
-
-static char	*remove_closed_quotes(char *delimiter)
-{
-	int		single_quotes;
-	int		double_quotes;
-	int		i;
-	int		j;
-	char	*new_delimiter;
-
-	count_closed_quotes(&single_quotes, &double_quotes, delimiter);
-	new_delimiter = ft_calloc(ft_strlen(delimiter) - single_quotes
-			- double_quotes + 1, sizeof(char));
-	if (new_delimiter == NULL)
-		return (NULL);
-	i = -1;
-	j = -1;
-	while (delimiter[++i])
-	{
-		if ((delimiter[i] == '\'' && single_quotes-- > 0)
-			|| (delimiter[i] == '"' && double_quotes-- > 0))
-			continue ;
-		new_delimiter[++j] = delimiter[i];
-	}
-	return (new_delimiter);
-}
-
 bool	expand_tokens(t_token **token_list, t_shell *shell)
 {
 	char	*new_line;

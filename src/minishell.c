@@ -129,6 +129,12 @@ int	main(int argc, char *argv[], char *envp[])
 				print_tokens(*tokens);
 			cmd_table = parser(&tokens, &shell);
 			free_tokens(&tokens);
+			if (cmd_table == NULL)
+			{
+				perror(SHELL_NAME);
+				free_cmd_table((t_cmd_table **) &cmd_table);
+				continue ;
+			}
 			if (cmd_table != NULL)
 			{
 				if (DEBUG)

@@ -31,50 +31,6 @@ static char	*random_string(void)
 	return ((char *) string);
 }
 
-static void	count_closed_quotes(int *single_quotes, int *double_quotes,
-	char *delimiter)
-{
-	int	i;
-
-	i = -1;
-	*single_quotes = 0;
-	*double_quotes = 0;
-	while (delimiter[++i])
-	{
-		if (delimiter[i] == '\'')
-			(*single_quotes)++;
-		else if (delimiter[i] == '"')
-			(*double_quotes)++;
-	}
-	*single_quotes = *single_quotes - (*single_quotes % 2);
-	*double_quotes = *double_quotes - (*double_quotes % 2);
-}
-
-static char	*remove_closed_quotes(char *delimiter)
-{
-	int		single_quotes;
-	int		double_quotes;
-	int		i;
-	int		j;
-	char	*new_delimiter;
-
-	count_closed_quotes(&single_quotes, &double_quotes, delimiter);
-	new_delimiter = ft_calloc(ft_strlen(delimiter) - single_quotes
-			- double_quotes + 1, sizeof(char));
-	if (new_delimiter == NULL)
-		return (NULL);
-	i = -1;
-	j = -1;
-	while (delimiter[++i])
-	{
-		if ((delimiter[i] == '\'' && single_quotes-- > 0)
-			|| (delimiter[i] == '"' && double_quotes-- > 0))
-			continue ;
-		new_delimiter[++j] = delimiter[i];
-	}
-	return (new_delimiter);
-}
-
 static void	read_heredoc_input(int fd, char *delimiter, bool expand,
 	t_shell *shell)
 {
@@ -105,6 +61,12 @@ static void	read_heredoc_input(int fd, char *delimiter, bool expand,
 	free(line);
 }
 
+static bool	should_expand(char *delimiter)
+{
+	return (ft_strchr(delimiter, '\'') == 0
+		&& ft_strchr(delimiter, '"') == 0);
+}
+
 int	parse_heredoc(t_token *token, bool last, t_shell *shell)
 {
 	char	rnd_filename[5 + RANDOM_STRING_LEN + 1];
@@ -120,8 +82,7 @@ int	parse_heredoc(t_token *token, bool last, t_shell *shell)
 	if (fd < 0)
 		return (-1);
 	ft_printf(SHELL_NAME ": Here-document, waiting for `%s`\n", delimiter);
-	read_heredoc_input(fd, delimiter,
-		!ft_strchr(token->value, '\'') && !ft_strchr(token->value, '"'), shell);
+	read_heredoc_input(fd, delimiter, should_expand(delimiter), shell);
 	free(delimiter);
 	close(fd);
 	if (last)
