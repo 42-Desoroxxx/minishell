@@ -37,12 +37,11 @@ BASE_FLAGS = \
  	-Werror=vla -pedantic-errors -Werror=int-conversion -Werror=incompatible-pointer-types -Werror=implicit-function-declaration -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations \
 	-MMD \
 	-flto=thin
-# Compiling with optimizations simply does not work
 RELEASE_FLAGS = \
-	-Werror #\
+	-Werror \
 	-O3 -ffast-math -march=native
 DEBUG_FLAGS = \
-	-g -O0 -fno-builtin -mno-omit-leaf-frame-pointer -fno-omit-frame-pointer \
+	-gfull -O0 -fno-builtin -mno-omit-leaf-frame-pointer -fno-omit-frame-pointer \
 	-DDEBUG=true
 SANE_FLAGS = \
 	-fsanitize=address,pointer-compare,pointer-subtract,leak,undefined,shift,shift-exponent,shift-base,integer-divide-by-zero,unreachable,vla-bound,null,signed-integer-overflow,bounds,alignment,float-divide-by-zero,float-cast-overflow,nonnull-attribute,returns-nonnull-attribute,bool,enum,pointer-overflow,builtin -fsanitize-address-use-after-scope

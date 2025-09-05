@@ -6,7 +6,7 @@
 /*   By: rvitiell <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/25 07:11:27 by rvitiell          #+#    #+#             */
-/*   Updated: 2025/08/25 07:11:29 by rvitiell         ###   ########.fr       */
+/*   Updated: 2025/09/05 11:56:33 by llage            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,7 +94,7 @@ bool	parse_redirs(t_cmd *cmd, t_token **token_ptr, t_shell *shell)
 		if (cmd->in_redir == -1 || cmd->out_redir == -1)
 			shell->exit_status = 1;
 		if (cmd->in_redir == -1 || cmd->out_redir == -1)
-			return (false);
+			perror(SHELL_NAME);
 		total--;
 	}
 	return (check_last(cmd));

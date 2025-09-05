@@ -6,7 +6,7 @@
 /*   By: llage <llage@student.42angouleme.fr>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/26 00:04:34 by llage             #+#    #+#             */
-/*   Updated: 2025/08/31 21:37:39 by llage            ###   ########.fr       */
+/*   Updated: 2025/09/05 14:43:38 by llage            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -112,7 +112,7 @@ void	exec_table(t_cmd_table *cmd_table, t_shell *shell)
     size_t	i;
     pid_t	*pids;
     int		npids = 0;
-    int		status, last_status = 0;
+    int		status;
 
     current = &cmd_table->cmds[0];
     if (cmd_table->size == 1 && is_builtin(current))
@@ -158,7 +158,6 @@ void	exec_table(t_cmd_table *cmd_table, t_shell *shell)
             	}
                 exit(exec_builtin(current, shell));
             }
-            // parent: close our copies so readers see EOF
             if (current->in_redir > 0)
 			{
 				close(current->in_redir);
@@ -169,15 +168,20 @@ void	exec_table(t_cmd_table *cmd_table, t_shell *shell)
 				close(current->out_redir);
             	current->out_redir = 0;
 			}
-
             pids[npids++] = pid;
         }
         else
         {
             char **envp;
-
-        	if (current->args == NULL || current->args[0] == NULL)
+        	if (current->args == NULL || current->args[0] == NULL
+        		|| current->in_redir == -1 || current->out_redir == -1)
+        	{
+        		if (current->in_redir > 0)
+        			close(current->in_redir);
+        		if (current->out_redir > 0)
+        			close(current->out_redir);
         		continue ;
+        	}
             envp = create_envp(shell->env);
             pid = fork();
             if (pid < 0)
@@ -214,7 +218,6 @@ void	exec_table(t_cmd_table *cmd_table, t_shell *shell)
                     exit(126);
                 exit(1);
             }
-            // parent: close our copies immediately
             if (current->in_redir > 0)
 			{
 				close(current->in_redir);
@@ -225,13 +228,10 @@ void	exec_table(t_cmd_table *cmd_table, t_shell *shell)
 	            close(current->out_redir);
             	current->out_redir = 0;
             }
-
             pids[npids++] = pid;
-
             free_envp(&envp);
         }
     }
-
     for (int j = 0; j < npids; j++)
     {
         if (waitpid(pids[j], &status, 0) == -1)
@@ -243,13 +243,11 @@ void	exec_table(t_cmd_table *cmd_table, t_shell *shell)
         if (j == npids - 1)
         {
             if (WIFEXITED(status))
-                last_status = WEXITSTATUS(status);
+                shell->exit_status = WEXITSTATUS(status);
             else if (WIFSIGNALED(status))
-                last_status = 128 + WTERMSIG(status);
+                shell->exit_status = 128 + WTERMSIG(status);
         }
     }
-
-    shell->exit_status = last_status;
 	free(pids);
 }
 

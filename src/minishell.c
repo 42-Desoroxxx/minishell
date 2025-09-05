@@ -91,7 +91,6 @@ static void	handle_interupt(const int signal)
 	rl_redisplay();
 }
 
-// TODO: Signals
 int	main(int argc, char *argv[], char *envp[])
 {
 	t_cmd_table	*cmd_table;

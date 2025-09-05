@@ -22,12 +22,14 @@ static char	*random_string(void)
 
 	bzero(string, RANDOM_STRING_LEN + 1);
 	fd = open("/dev/urandom", O_RDONLY | O_CLOEXEC);
-	read(fd, string, RANDOM_STRING_LEN);
+	if (read(fd, string, RANDOM_STRING_LEN) < 0)
+		close(close(fd));
 	i = 0;
 	string[i] = '.';
 	while (++i < RANDOM_STRING_LEN)
 		string[i] = (string[i] % 26) + 'a';
 	close(fd);
+	printf("%s\n", string);
 	return ((char *) string);
 }
 

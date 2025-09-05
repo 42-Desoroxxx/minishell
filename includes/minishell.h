@@ -154,7 +154,7 @@ char
 *expand_str(char *str, t_shell *shell);
 
 bool
-expand_tokens(t_token **token_list, t_shell *shell);
+expand_tokens(t_token **token_ptr, t_shell *shell);
 
 // expand_utils.c
 bool

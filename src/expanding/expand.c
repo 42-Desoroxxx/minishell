@@ -97,12 +97,12 @@ char	*expand_str(char *str, t_shell *shell)
 	return (new_line);
 }
 
-bool	expand_tokens(t_token **token_list, t_shell *shell)
+bool	expand_tokens(t_token **token_ptr, t_shell *shell)
 {
 	t_token	*token;
 	char	*tmp;
 
-	token = *token_list;
+	token = *token_ptr;
 	while (token->type != EMPTY)
 	{
 		if (token->type == WORD
@@ -119,18 +119,17 @@ bool	expand_tokens(t_token **token_list, t_shell *shell)
 				if (token->prev != NULL)
 					token->prev->next = token->next;
 				else
-					*token_list = token->next;
+					*token_ptr = token->next;
 				free(token);
-				token = *token_list;
+				token = *token_ptr;
 				continue ;
 			}
         }
 		token = token->next;
 	}
-	token = *token_list;
+	token = *token_ptr;
 	while (token->type != EMPTY)
 	{
-		// Remove quotes like bash does
 		if (token->type == WORD
 			&& (token->prev == NULL || token->prev->type != REDIR))
 		{
