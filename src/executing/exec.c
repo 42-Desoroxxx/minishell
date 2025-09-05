@@ -158,6 +158,8 @@ void	exec_table(t_cmd_table *cmd_table, t_shell *shell)
             char **envp;
             char *path;
 
+        	if (current->args == NULL || current->args[0] == NULL)
+        		continue ;
         	path = NULL;
             if (current->args[0][0] != '\0' && ft_strchr(current->args[0], '/') == NULL)
                 path = find_in_path(shell->env, current->args[0]);

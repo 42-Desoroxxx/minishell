@@ -38,7 +38,7 @@ static bool	build_cmd_line(t_token **token_ptr, t_shell *shell, t_cmd *cmd)
 {
 	if ((*token_ptr)->type == PIPE)
 		*token_ptr = (*token_ptr)->next;
-	if (!parse_words(cmd, token_ptr) || !parse_redirs(cmd, *token_ptr, shell))
+	if (!parse_words(cmd, token_ptr) || !parse_redirs(cmd, token_ptr, shell))
 		return (false);
 	return (true);
 }
