@@ -131,7 +131,8 @@ int	main(int argc, char *argv[], char *envp[])
 			free_tokens(&tokens);
 			if (cmd_table == NULL)
 			{
-				perror(SHELL_NAME);
+				if (shell.exit_status != 2)
+					perror(SHELL_NAME);
 				free_cmd_table((t_cmd_table **) &cmd_table);
 				continue ;
 			}
