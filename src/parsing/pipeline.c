@@ -20,7 +20,7 @@ bool	pipe_my_line(t_cmd_table *cmd_table)
 	i = -1;
 	while (++i < cmd_table->size - 1)
 	{
-		if (pipe(pipes) == -1) // ?
+		if (pipe(pipes) == -1)
 			return (false);
 		if (cmd_table->cmds[i].out_redir == 0)
 			cmd_table->cmds[i].out_redir = pipes[1];
