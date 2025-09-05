@@ -12,6 +12,8 @@
 
 #include <minishell.h>
 
+static volatile sig_atomic_t	g_signal = 0;
+
 static char	*add_exit_status(const t_shell *shell, char *prompt)
 {
 	prompt = ft_str_add(prompt, ANSI_RED " [");
@@ -76,6 +78,19 @@ static t_shell	create_shell(char *envp[])
 	return (shell);
 }
 
+static void	handle_interupt(const int signal)
+{
+	if (signal != SIGINT)
+		return ;
+	g_signal = SIGINT;
+	rl_crlf();
+	rl_replace_line("", 0);
+	rl_set_prompt(ANSI_RED "> " ANSI_RESET);
+	rl_expand_prompt(rl_prompt);
+	rl_on_new_line();
+	rl_redisplay();
+}
+
 // TODO: Signals
 int	main(int argc, char *argv[], char *envp[])
 {
@@ -87,12 +102,15 @@ int	main(int argc, char *argv[], char *envp[])
 
 	(void)argc;
 	(void)argv;
+	signal(SIGQUIT, SIG_IGN);
+	signal(SIGINT, handle_interupt);
 	shell = create_shell(envp);
 	while (true)
 	{
 		prompt = get_prompt(&shell);
-		// TODO: Set the signal handlers
 		line = readline(prompt);
+		if (g_signal == SIGINT)
+			shell.exit_status = 130;
 		free(prompt);
 		if (line == NULL)
 			break ;
@@ -115,7 +133,6 @@ int	main(int argc, char *argv[], char *envp[])
 			{
 				if (DEBUG)
 					print_cmd_table(cmd_table);
-				// TODO: Remove the signal handlers meow
 				exec_table(cmd_table, &shell);
 				free_cmd_table((t_cmd_table **) &cmd_table);
 			}

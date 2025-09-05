@@ -124,6 +124,8 @@ void exec_table(t_cmd_table *cmd_table, t_shell *shell)
                     close(current.out_redir);
                 }
                 exit(exec_builtin(current, shell)); // ? possibly problematic since exit != _exit
+            	signal(SIGQUIT, SIG_DFL);
+            	signal(SIGINT, SIG_DFL);
             }
             // parent: close our copies so readers see EOF
             if (current.in_redir > 0)
@@ -179,6 +181,8 @@ void exec_table(t_cmd_table *cmd_table, t_shell *shell)
                     close(current.out_redir);
                 }
                 execve(path, current.args, envp);
+				signal(SIGQUIT, SIG_DFL);
+				signal(SIGINT, SIG_DFL);
                 if (errno == ENOENT)
                     exit(127);
                 if (errno == EACCES)
