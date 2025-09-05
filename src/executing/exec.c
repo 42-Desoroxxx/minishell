@@ -108,18 +108,18 @@ static char	*get_path(t_cmd *cmd, t_shell *shell)
 
 void	exec_table(t_cmd_table *cmd_table, t_shell *shell)
 {
-    t_cmd	*current;
-    size_t	i;
-    pid_t	*pids;
-    int		npids = 0;
-    int		status;
+	t_cmd	*current;
+	size_t	i;
+	pid_t	*pids;
+	int		npids = 0;
+	int		status;
 
-    current = &cmd_table->cmds[0];
-    if (cmd_table->size == 1 && is_builtin(current))
-    {
-    	exec_lonely_builtin(current, shell);
-        return ;
-    }
+	current = &cmd_table->cmds[0];
+	if (cmd_table->size == 1 && is_builtin(current))
+	{
+		exec_lonely_builtin(current, shell);
+		return ;
+	}
 	pids = ft_calloc(cmd_table->size + 1, sizeof(pid_t));
 	if (pids == NULL)
 	{
@@ -127,127 +127,126 @@ void	exec_table(t_cmd_table *cmd_table, t_shell *shell)
 		return ;
 	}
 	i = -1;
-    while (++i < cmd_table->size)
-    {
-        pid_t pid;
+	while (++i < cmd_table->size)
+	{
+		pid_t	pid;
 
-        current = &cmd_table->cmds[i];
-        if (is_builtin(current))
-        {
-            pid = fork();
-            if (pid < 0)
-            {
-                shell->exit_status = errno;
-            	free(pids);
-                return ;
-            }
-            if (pid == 0)
-            {
-            	signal(SIGQUIT, SIG_DFL);
-            	signal(SIGINT, SIG_DFL);
-                if (current->in_redir > 0)
-                    dup2(current->in_redir, STDIN_FILENO);
-                if (current->out_redir > 0)
-                    dup2(current->out_redir, STDOUT_FILENO);
-            	for (size_t j = 0; j < cmd_table->size; j++)
-            	{
-            		if (cmd_table->cmds[j].in_redir > 0)
-            			close(cmd_table->cmds[j].in_redir);
-            		if (cmd_table->cmds[j].out_redir > 0)
-            			close(cmd_table->cmds[j].out_redir);
-            	}
-                exit(exec_builtin(current, shell));
-            }
-            if (current->in_redir > 0)
+		current = &cmd_table->cmds[i];
+		if (is_builtin(current))
+		{
+			pid = fork();
+			if (pid < 0)
 			{
-				close(current->in_redir);
-            	current->in_redir = 0;
+				shell->exit_status = errno;
+				free(pids);
+				return ;
 			}
-            if (current->out_redir > 0)
+			if (pid == 0)
 			{
-				close(current->out_redir);
-            	current->out_redir = 0;
-			}
-            pids[npids++] = pid;
-        }
-        else
-        {
-            char **envp;
-        	if (current->args == NULL || current->args[0] == NULL
-        		|| current->in_redir == -1 || current->out_redir == -1)
-        	{
-        		if (current->in_redir > 0)
-        			close(current->in_redir);
-        		if (current->out_redir > 0)
-        			close(current->out_redir);
-        		continue ;
-        	}
-            envp = create_envp(shell->env);
-            pid = fork();
-            if (pid < 0)
-            {
-                free_envp(&envp);
-                shell->exit_status = errno;
-            	perror(SHELL_NAME);
-            	free(pids);
-                return ;
-            }
-            if (pid == 0)
-            {
-            	char *path = get_path(current, shell);
-            	if (path == NULL)
-            		exit(127);
 				signal(SIGQUIT, SIG_DFL);
 				signal(SIGINT, SIG_DFL);
 				if (current->in_redir > 0)
-                    dup2(current->in_redir, STDIN_FILENO);
-                if (current->out_redir > 0)
-                    dup2(current->out_redir, STDOUT_FILENO);
-            	for (size_t j = 0; j < cmd_table->size; j++)
-            	{
-            		if (cmd_table->cmds[j].in_redir > 0)
-            			close(cmd_table->cmds[j].in_redir);
-            		if (cmd_table->cmds[j].out_redir > 0)
-            			close(cmd_table->cmds[j].out_redir);
-            	}
-                execve(path, current->args, envp);
-            	free(path);
-                if (errno == ENOENT)
-                    exit(127);
-                if (errno == EACCES)
-                    exit(126);
-                exit(1);
-            }
-            if (current->in_redir > 0)
+					dup2(current->in_redir, STDIN_FILENO);
+				if (current->out_redir > 0)
+					dup2(current->out_redir, STDOUT_FILENO);
+				for (size_t j = 0; j < cmd_table->size; j++)
+				{
+					if (cmd_table->cmds[j].in_redir > 0)
+						close(cmd_table->cmds[j].in_redir);
+					if (cmd_table->cmds[j].out_redir > 0)
+						close(cmd_table->cmds[j].out_redir);
+				}
+				exit(exec_builtin(current, shell));
+			}
+			if (current->in_redir > 0)
 			{
 				close(current->in_redir);
-            	current->in_redir = 0;
+				current->in_redir = 0;
 			}
-            if (current->out_redir > 0)
-            {
-	            close(current->out_redir);
-            	current->out_redir = 0;
-            }
-            pids[npids++] = pid;
-            free_envp(&envp);
-        }
-    }
-    for (int j = 0; j < npids; j++)
-    {
-        if (waitpid(pids[j], &status, 0) == -1)
-        {
-            shell->exit_status = errno;
-        	free(pids);
-            return ;
-        }
-        if (j == npids - 1)
-        {
-            if (WIFEXITED(status))
-                shell->exit_status = WEXITSTATUS(status);
-            else if (WIFSIGNALED(status))
-                shell->exit_status = 128 + WTERMSIG(status);
-        }
-    }
+			if (current->out_redir > 0)
+			{
+				close(current->out_redir);
+				current->out_redir = 0;
+			}
+			pids[npids++] = pid;
+		}
+		else
+		{
+			char	**envp;
+			if (current->args == NULL || current->args[0] == NULL
+				|| current->in_redir == -1 || current->out_redir == -1)
+			{
+				if (current->in_redir > 0)
+					close(current->in_redir);
+				if (current->out_redir > 0)
+					close(current->out_redir);
+				continue ;
+			}
+			envp = create_envp(shell->env);
+			pid = fork();
+			if (pid < 0)
+			{
+				free_envp(&envp);
+				shell->exit_status = errno;
+				perror(SHELL_NAME);
+				free(pids);
+				return ;
+			}
+			if (pid == 0)
+			{
+				char	*path = get_path(current, shell);
+				if (path == NULL)
+					exit(127);
+				signal(SIGQUIT, SIG_DFL);
+				signal(SIGINT, SIG_DFL);
+				if (current->in_redir > 0)
+					dup2(current->in_redir, STDIN_FILENO);
+				if (current->out_redir > 0)
+					dup2(current->out_redir, STDOUT_FILENO);
+				for (size_t j = 0; j < cmd_table->size; j++)
+				{
+					if (cmd_table->cmds[j].in_redir > 0)
+						close(cmd_table->cmds[j].in_redir);
+					if (cmd_table->cmds[j].out_redir > 0)
+						close(cmd_table->cmds[j].out_redir);
+				}
+				execve(path, current->args, envp);
+				free(path);
+				if (errno == ENOENT)
+					exit(127);
+				if (errno == EACCES)
+					exit(126);
+				exit(1);
+			}
+			if (current->in_redir > 0)
+			{
+				close(current->in_redir);
+				current->in_redir = 0;
+			}
+			if (current->out_redir > 0)
+			{
+				close(current->out_redir);
+				current->out_redir = 0;
+			}
+			pids[npids++] = pid;
+			free_envp(&envp);
+		}
+	}
+	for (int j = 0; j < npids; j++)
+	{
+		if (waitpid(pids[j], &status, 0) == -1)
+		{
+			shell->exit_status = errno;
+			free(pids);
+			return ;
+		}
+		if (j == npids - 1)
+		{
+			if (WIFEXITED(status))
+				shell->exit_status = WEXITSTATUS(status);
+			else if (WIFSIGNALED(status))
+				shell->exit_status = 128 + WTERMSIG(status);
+		}
+	}
 	free(pids);
 }
-

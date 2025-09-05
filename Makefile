@@ -64,7 +64,7 @@ SRC_FILES := \
 	expanding/expand.c expanding/expand_utils.c \
 	parsing/parser.c parsing/parse_heredoc.c parsing/parse_n_count.c parsing/parse_redirs.c parsing/pipeline.c parsing/parsing_utils.c \
 	executing/path.c executing/exec.c \
-	executing/builtin/echo.c executing/builtin/cd.c executing/builtin/pwd.c executing/builtin/export.c executing/builtin/unset.c executing/builtin/env.c
+	executing/builtin/echo.c executing/builtin/cd.c executing/builtin/pwd.c executing/builtin/export.c executing/builtin/export_utils.c executing/builtin/unset.c executing/builtin/env.c
 SRCS := $(addprefix $(SRC)/,$(SRC_FILES))
 OBJS := $(patsubst $(SRC)/%.c,$(OBJ)/%.o,$(SRCS))
 

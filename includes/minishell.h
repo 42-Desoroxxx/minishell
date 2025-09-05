@@ -192,6 +192,16 @@ pwd(char *args[]);
 int
 export(char *args[], t_map *env);
 
+// export_utils.c
+void
+export_print_error(const char *name, const char *value, bool usage);
+
+bool
+check_options(char *args[]);
+
+bool
+is_valid_key(const char *str);
+
 // unset.c
 int
 unset(char *args[], t_map *env);

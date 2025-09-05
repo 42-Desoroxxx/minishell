@@ -6,7 +6,7 @@
 /*   By: llage <llage@student.42angouleme.fr>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/30 20:27:04 by llage             #+#    #+#             */
-/*   Updated: 2025/08/31 21:27:47 by llage            ###   ########.fr       */
+/*   Updated: 2025/09/05 16:44:48 by llage            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,10 +94,10 @@ static void	handle_interupt(const int signal)
 int	main(int argc, char *argv[], char *envp[])
 {
 	t_cmd_table	*cmd_table;
-	t_token				*tokens;
-	char				*prompt;
-	char				*line;
-	t_shell				shell; // TODO: probably want that as a ptr to avoid duplications everywhere and simplify some semantics
+	t_token		*tokens;
+	char		*prompt;
+	char		*line;
+	t_shell		shell; // TODO: probably want that as a ptr to avoid duplications everywhere and simplify some semantics
 
 	(void)argc;
 	(void)argv;
