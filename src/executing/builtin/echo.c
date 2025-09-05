@@ -40,6 +40,8 @@ int	echo(char *args[])
 	newline = should_have_newline(args[1]);
 	if (!newline)
 		++i;
+	while (args[i + 1] && !should_have_newline(args[i + 1]))
+		i++;
 	while (args[++i] != NULL)
 	{
 		ft_printf(args[i]);
