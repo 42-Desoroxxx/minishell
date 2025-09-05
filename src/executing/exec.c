@@ -13,7 +13,7 @@
 #include <errno.h>
 #include <minishell.h>
 
-static bool	is_builtin(const t_cmd cmd)
+static bool	is_builtin(const t_cmd *cmd)
 {
 	const char	*builtins[] = {"echo", "cd", "pwd", "export", "unset",
 		"env", "exit", NULL};
@@ -21,26 +21,30 @@ static bool	is_builtin(const t_cmd cmd)
 
 	i = -1;
 	while (builtins[++i] != NULL)
-		if (ft_str_equal(cmd.args[0], builtins[i]))
+		if (ft_str_equal(cmd->args[0], builtins[i]))
 			return (true);
 	return (false);
 }
 
-static int	exec_builtin(t_cmd cmd, t_shell *shell)
+static int	exec_builtin(t_cmd *cmd, t_shell *shell)
 {
-	if (ft_str_equal(cmd.args[0], "echo"))
-		return (echo(cmd.args));
-	if (ft_str_equal(cmd.args[0], "pwd"))
-		return (pwd(cmd.args));
-	if (ft_str_equal(cmd.args[0], "unset"))
-		return (unset(cmd.args, &shell->env));
-	if (ft_str_equal(cmd.args[0], "env"))
+	if (ft_str_equal(cmd->args[0], "echo"))
+		return (echo(cmd->args));
+	if (ft_str_equal(cmd->args[0], "cd"))
+		return (cd(cmd->args, &shell->env));
+	if (ft_str_equal(cmd->args[0], "pwd"))
+		return (pwd(cmd->args));
+	if (ft_str_equal(cmd->args[0], "export"))
+		return (export(cmd->args, &shell->env));
+	if (ft_str_equal(cmd->args[0], "unset"))
+		return (unset(cmd->args, &shell->env));
+	if (ft_str_equal(cmd->args[0], "env"))
+		return (env(cmd->args, &shell->env));
+	if (ft_str_equal(cmd->args[0], "exit"))
 	{
-		map_print(&shell->env);
-		return (0);
+		ft_fprintf(STDERR_FILENO, "exit");
+		exit((uint8_t) ft_atoi(cmd->args[1]));
 	}
-	ft_fprintf(STDERR_FILENO, ANSI_RED SHELL_NAME
-		" [Error]: Builtin command not implemented\n" ANSI_RESET);
 	return (1);
 }
 
