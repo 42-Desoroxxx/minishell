@@ -126,7 +126,7 @@ int
 count_pipes(t_token **token_list);
 
 bool
-parse_words(t_cmd *cmd, t_token *token);
+parse_words(t_cmd *cmd, t_token **token_ptr);
 
 bool
 check_last(t_cmd *cmd);

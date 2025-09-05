@@ -34,16 +34,16 @@ static void	check_redir(t_token *token, t_token **token_list)
 	}
 }
 
-static bool	build_cmd_line(t_token **token_ptr, t_shell shell, t_cmd *cmd)
+static bool	build_cmd_line(t_token **token_ptr, t_shell *shell, t_cmd *cmd)
 {
 	if ((*token_ptr)->type == PIPE)
 		*token_ptr = (*token_ptr)->next;
-	if (!parse_words(cmd, token_ptr) || !parse_redirs(cmd, **token_ptr, shell))
+	if (!parse_words(cmd, token_ptr) || !parse_redirs(cmd, *token_ptr, shell))
 		return (false);
 	return (true);
 }
 
-static t_cmd_table	*build_cmd_table(t_token **token_ptr, t_shell shell)
+static t_cmd_table	*build_cmd_table(t_token **token_ptr, t_shell *shell)
 {
 	const int	cmd_count = count_pipes(token_ptr) + 1;
 	t_cmd_table	*cmd_table;
@@ -98,7 +98,7 @@ t_cmd_table	*parser(t_token **token_list, t_shell *shell)
 		}
 		token = token->next;
 	}
-	if (!expand_tokens(token_list, *shell))
+	if (!expand_tokens(token_list, shell))
 	{
 		perror(SHELL_NAME);
 		free_tokens(token_list);
@@ -106,5 +106,5 @@ t_cmd_table	*parser(t_token **token_list, t_shell *shell)
 	}
 	if (DEBUG)
 		print_tokens(**token_list);
-	return (build_cmd_table(token_list, *shell));
+	return (build_cmd_table(token_list, shell));
 }

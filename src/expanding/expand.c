@@ -31,7 +31,7 @@ static char	*replace_expand_with_value(char *line, char *expand,
 	{
 		if (line + line_iter == expand)
 		{
-			copy_value_to_newline(new_line, value, &newline_iter, &value_iter);
+			copy_value(new_line, value, &newline_iter, &value_iter);
 			line_iter += len;
 		}
 		else
@@ -56,7 +56,7 @@ static char	*expanding(char *line, char *expand, int len, const t_map env)
 	return (new_line);
 }
 
-static char	*isolate_expand(char *line, int *i, t_shell shell)
+static char	*isolate_expand(char *line, int *i, t_shell *shell)
 {
 	int		j;
 	char	*new_line;
@@ -67,11 +67,11 @@ static char	*isolate_expand(char *line, int *i, t_shell shell)
 	{
 		while (line[(*i) + j] && is_possible_char(line[(*i) + j], j))
 			j++;
-		new_line = expanding(line, &line[(*i)], j, shell.env);
+		new_line = expanding(line, &line[(*i)], j, shell->env);
 	}
 	else
 	{
-		value = ft_itoa(shell.exit_status);
+		value = ft_itoa(shell->exit_status);
 		if (value == NULL)
 			return (NULL);
 		new_line = replace_expand_with_value(line, &line[(*i)], value, 2);
@@ -81,7 +81,7 @@ static char	*isolate_expand(char *line, int *i, t_shell shell)
 	return (new_line);
 }
 
-char	*expand_line(char *line, t_shell shell)
+char	*expand_line(char *line, t_shell *shell)
 {
 	int			i;
 	t_status	quotes;
@@ -154,7 +154,7 @@ static char	*remove_closed_quotes(char *delimiter)
 	return (new_delimiter);
 }
 
-bool	expand_tokens(t_token **token_list, t_shell shell)
+bool	expand_tokens(t_token **token_list, t_shell *shell)
 {
 	char	*new_line;
 	t_token	*token;

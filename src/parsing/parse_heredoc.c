@@ -76,7 +76,7 @@ static char	*remove_closed_quotes(char *delimiter)
 }
 
 static void	read_heredoc_input(int fd, char *delimiter, bool expand,
-	t_shell shell)
+	t_shell *shell)
 {
 	char		*line;
 	int			line_count;
@@ -105,13 +105,13 @@ static void	read_heredoc_input(int fd, char *delimiter, bool expand,
 	free(line);
 }
 
-int	parse_heredoc(t_token token, bool last, t_shell shell)
+int	parse_heredoc(t_token *token, bool last, t_shell *shell)
 {
 	char	rnd_filename[5 + RANDOM_STRING_LEN + 1];
 	char	*delimiter;
 	int		fd;
 
-	delimiter = remove_closed_quotes(token.value);
+	delimiter = remove_closed_quotes(token->value);
 	if (delimiter == NULL)
 		return (-1);
 	ft_strlcat(rnd_filename, "/tmp/", 5 + RANDOM_STRING_LEN + 1);
@@ -121,7 +121,7 @@ int	parse_heredoc(t_token token, bool last, t_shell shell)
 		return (-1);
 	ft_printf(SHELL_NAME ": Here-document, waiting for `%s`\n", delimiter);
 	read_heredoc_input(fd, delimiter,
-		!ft_strchr(token.value, '\'') && !ft_strchr(token.value, '"'), shell);
+		!ft_strchr(token->value, '\'') && !ft_strchr(token->value, '"'), shell);
 	free(delimiter);
 	close(fd);
 	if (last)

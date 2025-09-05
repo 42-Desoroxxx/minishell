@@ -40,13 +40,12 @@ bool	is_possible_char(char c, int i)
 	return (true);
 }
 
-void	copy_value_to_newline(char *new_line, char *value,
-	int *newline_iter, int *value_iter)
+void	copy_value(char *new_line, char *value, int *newline_i, int *value_i)
 {
 	if (value == NULL)
 		return ;
-	while (value[*value_iter])
-		new_line[(*newline_iter)++] = value[(*value_iter)++];
+	while (value[*value_i])
+		new_line[(*newline_i)++] = value[(*value_i)++];
 }
 
 void	remove_quotes(char *new_line)

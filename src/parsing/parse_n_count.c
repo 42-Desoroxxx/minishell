@@ -41,20 +41,20 @@ static int	count(t_token *token, t_token_type type)
 	return (count);
 }
 
-bool	parse_words(t_cmd *cmd, t_token **token)
+bool	parse_words(t_cmd *cmd, t_token **token_ptr)
 {
 	int	i;
 
-	cmd->args = ft_calloc(sizeof(char *), count(*token, WORD) + 1);
+	cmd->args = ft_calloc(sizeof(char *), count(*token_ptr, WORD) + 1);
 	if (cmd->args == NULL)
 		return (false);
 	i = 0;
-	while ((*token)->type == WORD)
+	while ((*token_ptr)->type == WORD)
 	{
-		cmd->args[i] = ft_strdup((*token)->value);
+		cmd->args[i] = ft_strdup((*token_ptr)->value);
 		if (cmd->args[i] == NULL)
 			return (false);
-		*token = (*token)->next;
+		*token_ptr = (*token_ptr)->next;
 		i++;
 	}
 	return (true);

@@ -48,64 +48,71 @@ static int	exec_builtin(t_cmd *cmd, t_shell *shell)
 	return (1);
 }
 
-void exec_table(t_cmd_table *cmd_table, t_shell *shell)
+static void	restore_redirs(t_cmd *cmd, int fd_in_backup, int fd_out_backup)
 {
-    t_cmd  current;
-    size_t    i;
-    pid_t  *pids;
-    int    npids = 0;
-    int    status, last_status = 0;
+	if (fd_in_backup > 0)
+	{
+		dup2(fd_in_backup, STDIN_FILENO);
+		close(fd_in_backup);
+		close(cmd->in_redir);
+		cmd->in_redir = 0;
+	}
+	if (fd_out_backup > 0)
+	{
+		dup2(fd_out_backup, STDOUT_FILENO);
+		close(fd_out_backup);
+		close(cmd->out_redir);
+		cmd->out_redir = 0;
+	}
+}
 
-    pids = ft_calloc(cmd_table->size + 1, sizeof(pid_t));
-    if (pids == NULL)
-    {
-        shell->exit_status = errno;
-    	free(pids);
-        return ;
-    }
-    current = cmd_table->cmds[0];
+static void	exec_lonely_builtin(t_cmd *cmd, t_shell *shell)
+{
+	int		fd_in_backup;
+	int		fd_out_backup;
+
+	fd_in_backup = -1;
+	fd_out_backup = -1;
+	if (cmd->in_redir > 0)
+	{
+		fd_in_backup = dup(STDIN_FILENO);
+		dup2(cmd->in_redir, STDIN_FILENO);
+	}
+	if (cmd->out_redir > 0)
+	{
+		fd_out_backup = dup(STDOUT_FILENO);
+		dup2(cmd->out_redir, STDOUT_FILENO);
+	}
+	shell->exit_status = exec_builtin(cmd, shell);
+	restore_redirs(cmd, fd_in_backup, fd_out_backup);
+}
+
+void	exec_table(t_cmd_table *cmd_table, t_shell *shell)
+{
+    t_cmd	*current;
+    size_t	i;
+    pid_t	*pids;
+    int		npids = 0;
+    int		status, last_status = 0;
+
+    current = &cmd_table->cmds[0];
     if (cmd_table->size == 1 && is_builtin(current))
     {
-        int fd_in_save, fd_out_save;
-
-        if (current.in_redir > 0)
-        {
-            fd_in_save = dup(STDIN_FILENO);
-            dup2(current.in_redir, STDIN_FILENO);
-        }
-        if (current.out_redir > 0)
-        {
-            fd_out_save = dup(STDOUT_FILENO);
-            dup2(current.out_redir, STDOUT_FILENO);
-        }
-
-        status = exec_builtin(current, shell);
-
-        if (current.in_redir > 0)
-        {
-            dup2(fd_in_save, STDIN_FILENO);
-            close(fd_in_save);
-            close(current.in_redir);
-        	cmd_table->cmds[0].in_redir = 0;
-        }
-        if (current.out_redir > 0)
-        {
-            dup2(fd_out_save, STDOUT_FILENO);
-            close(fd_out_save);
-            close(current.out_redir);
-        	cmd_table->cmds[0].out_redir = 0;
-        }
-
-        shell->exit_status = status;
-    	free(pids);
+    	exec_lonely_builtin(current, shell);
         return ;
     }
+	pids = ft_calloc(cmd_table->size + 1, sizeof(pid_t));
+	if (pids == NULL)
+	{
+		perror(SHELL_NAME);
+		return ;
+	}
 	i = -1;
     while (++i < cmd_table->size)
     {
         pid_t pid;
 
-        current = cmd_table->cmds[i];
+        current = &cmd_table->cmds[i];
         if (is_builtin(current))
         {
             pid = fork();
@@ -117,30 +124,31 @@ void exec_table(t_cmd_table *cmd_table, t_shell *shell)
             }
             if (pid == 0)
             {
-                if (current.in_redir > 0)
-                {
-                    dup2(current.in_redir, STDIN_FILENO);
-                    close(current.in_redir);
-                }
-                if (current.out_redir > 0)
-                {
-                    dup2(current.out_redir, STDOUT_FILENO);
-                    close(current.out_redir);
-                }
-                exit(exec_builtin(current, shell)); // ? possibly problematic since exit != _exit
             	signal(SIGQUIT, SIG_DFL);
             	signal(SIGINT, SIG_DFL);
+                if (current->in_redir > 0)
+                    dup2(current->in_redir, STDIN_FILENO);
+                if (current->out_redir > 0)
+                    dup2(current->out_redir, STDOUT_FILENO);
+            	for (size_t j = 0; j < cmd_table->size; j++)
+            	{
+            		if (cmd_table->cmds[j].in_redir > 0)
+            			close(cmd_table->cmds[j].in_redir);
+            		if (cmd_table->cmds[j].out_redir > 0)
+            			close(cmd_table->cmds[j].out_redir);
+            	}
+                exit(exec_builtin(current, shell));
             }
             // parent: close our copies so readers see EOF
-            if (current.in_redir > 0)
+            if (current->in_redir > 0)
 			{
-				close(current.in_redir);
-            	cmd_table->cmds[i].in_redir = 0;
+				close(current->in_redir);
+            	current->in_redir = 0;
 			}
-            if (current.out_redir > 0)
+            if (current->out_redir > 0)
 			{
-				close(current.out_redir);
-            	cmd_table->cmds[i].out_redir = 0;
+				close(current->out_redir);
+            	current->out_redir = 0;
 			}
 
             pids[npids++] = pid;
@@ -150,13 +158,15 @@ void exec_table(t_cmd_table *cmd_table, t_shell *shell)
             char **envp;
             char *path;
 
-            if (ft_strchr(current.args[0], '/') == NULL)
-                path = find_in_path(shell->env, current.args[0]);
-            else
-                path = ft_strdup(current.args[0]);
-            if (path == NULL)
+        	path = NULL;
+            if (current->args[0][0] != '\0' && ft_strchr(current->args[0], '/') == NULL)
+                path = find_in_path(shell->env, current->args[0]);
+            else if (current->args[0][0] != '\0')
+                path = ft_strdup(current->args[0]);
+            if (path == NULL || path[0] == '\0')
             {
-                ft_fprintf(STDERR_FILENO, SHELL_NAME ": command not found (%s)\n", current.args[0]);
+                ft_fprintf(STDERR_FILENO, ANSI_RED SHELL_NAME "[Error]: "
+					"command not found (%s)\n" ANSI_RESET, current->args[0]);
                 shell->exit_status = 127;
             	free(pids);
                 return ;
@@ -169,24 +179,26 @@ void exec_table(t_cmd_table *cmd_table, t_shell *shell)
                 free(path);
                 free_envp(&envp);
                 shell->exit_status = errno;
+            	perror(SHELL_NAME);
             	free(pids);
                 return ;
             }
             if (pid == 0)
             {
-                if (current.in_redir > 0)
-                {
-                    dup2(current.in_redir, STDIN_FILENO);
-                    close(current.in_redir);
-                }
-                if (current.out_redir > 0)
-                {
-                    dup2(current.out_redir, STDOUT_FILENO);
-                    close(current.out_redir);
-                }
-                execve(path, current.args, envp);
 				signal(SIGQUIT, SIG_DFL);
 				signal(SIGINT, SIG_DFL);
+				if (current->in_redir > 0)
+                    dup2(current->in_redir, STDIN_FILENO);
+                if (current->out_redir > 0)
+                    dup2(current->out_redir, STDOUT_FILENO);
+            	for (size_t j = 0; j < cmd_table->size; j++)
+            	{
+            		if (cmd_table->cmds[j].in_redir > 0)
+            			close(cmd_table->cmds[j].in_redir);
+            		if (cmd_table->cmds[j].out_redir > 0)
+            			close(cmd_table->cmds[j].out_redir);
+            	}
+                execve(path, current->args, envp);
                 if (errno == ENOENT)
                     exit(127);
                 if (errno == EACCES)
@@ -194,15 +206,15 @@ void exec_table(t_cmd_table *cmd_table, t_shell *shell)
                 exit(1);
             }
             // parent: close our copies immediately
-            if (current.in_redir > 0)
+            if (current->in_redir > 0)
 			{
-				close(current.in_redir);
-            	cmd_table->cmds[i].in_redir = 0;
+				close(current->in_redir);
+            	current->in_redir = 0;
 			}
-            if (current.out_redir > 0)
+            if (current->out_redir > 0)
             {
-	            close(current.out_redir);
-            	cmd_table->cmds[i].out_redir = 0;
+	            close(current->out_redir);
+            	current->out_redir = 0;
             }
 
             pids[npids++] = pid;
