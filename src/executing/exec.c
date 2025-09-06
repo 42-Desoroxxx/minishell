@@ -112,10 +112,15 @@ void	exec_table(t_cmd_table *cmd_table, t_shell *shell)
 	int		status;
 
 	current = &cmd_table->cmds[0];
-	if (cmd_table->size == 1 && is_builtin(current))
+	if (cmd_table->size == 1)
 	{
-		exec_lonely_builtin(current, shell);
-		return ;
+		if (current->args == NULL || current->args[0] == NULL)
+			return ;
+		if (is_builtin(current))
+		{
+			exec_lonely_builtin(current, shell);
+			return ;
+		}
 	}
 	pids = ft_calloc(cmd_table->size + 1, sizeof(pid_t));
 	if (pids == NULL)
@@ -170,15 +175,7 @@ void	exec_table(t_cmd_table *cmd_table, t_shell *shell)
 		else
 		{
 			char	**envp;
-			if (current->args == NULL || current->args[0] == NULL
-				|| current->in_redir == -1 || current->out_redir == -1)
-			{
-				if (current->in_redir > 0)
-					close(current->in_redir);
-				if (current->out_redir > 0)
-					close(current->out_redir);
-				continue ;
-			}
+
 			envp = create_envp(shell->env);
 			pid = fork();
 			if (pid < 0)
@@ -191,9 +188,9 @@ void	exec_table(t_cmd_table *cmd_table, t_shell *shell)
 			}
 			if (pid == 0)
 			{
-				char	*path = get_path(current, shell);
-				if (path == NULL)
-					exit(127);
+				char	*path;
+				if (current->in_redir < 0 || current->out_redir < 0)
+					exit(1);
 				signal(SIGQUIT, SIG_DFL);
 				signal(SIGINT, SIG_DFL);
 				if (current->in_redir > 0)
@@ -207,6 +204,11 @@ void	exec_table(t_cmd_table *cmd_table, t_shell *shell)
 					if (cmd_table->cmds[j].out_redir > 0)
 						close(cmd_table->cmds[j].out_redir);
 				}
+				if (current->args == NULL || current->args[0] == NULL)
+					exit(0);
+				path = get_path(current, shell);
+				if (path == NULL)
+					exit(127);
 				execve(path, current->args, envp);
 				free(path);
 				if (errno == ENOENT)
