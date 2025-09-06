@@ -70,6 +70,12 @@ static void	exec_lonely_builtin(t_cmd *cmd, t_shell *shell)
 
 	fd_in_backup = -1;
 	fd_out_backup = -1;
+	if (cmd->in_redir == -1 || cmd->out_redir == -1)
+	{
+		perror(SHELL_NAME);
+		shell->exit_status = 1;
+		return ;
+	}
 	if (cmd->in_redir > 0)
 	{
 		fd_in_backup = dup(STDIN_FILENO);
@@ -115,7 +121,14 @@ void	exec_table(t_cmd_table *cmd_table, t_shell *shell)
 	if (cmd_table->size == 1)
 	{
 		if (current->args == NULL || current->args[0] == NULL)
+		{
+			if (current->in_redir == -1 || current->out_redir == -1)
+			{
+				perror(SHELL_NAME);
+				shell->exit_status = 1;
+			}
 			return ;
+		}
 		if (is_builtin(current))
 		{
 			exec_lonely_builtin(current, shell);
@@ -158,6 +171,11 @@ void	exec_table(t_cmd_table *cmd_table, t_shell *shell)
 					if (cmd_table->cmds[j].out_redir > 0)
 						close(cmd_table->cmds[j].out_redir);
 				}
+				if (current->in_redir == -1 || current->out_redir == -1)
+				{
+					perror(SHELL_NAME);
+					exit(1);
+				}
 				exit(exec_builtin(current, shell));
 			}
 			if (current->in_redir > 0)
@@ -189,8 +207,11 @@ void	exec_table(t_cmd_table *cmd_table, t_shell *shell)
 			if (pid == 0)
 			{
 				char	*path;
-				if (current->in_redir < 0 || current->out_redir < 0)
+				if (current->in_redir == -1 || current->out_redir == -1)
+				{
+					perror(SHELL_NAME);
 					exit(1);
+				}
 				signal(SIGQUIT, SIG_DFL);
 				signal(SIGINT, SIG_DFL);
 				if (current->in_redir > 0)
