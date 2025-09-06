@@ -41,10 +41,7 @@ static int	exec_builtin(t_cmd *cmd, t_shell *shell)
 	if (ft_str_equal(cmd->args[0], "env"))
 		return (env(cmd->args, &shell->env));
 	if (ft_str_equal(cmd->args[0], "exit"))
-	{
-		ft_fprintf(STDERR_FILENO, "exit");
-		exit((uint8_t) ft_atol(cmd->args[1]));
-	}
+		return (ms_exit(cmd->args, shell));
 	return (1);
 }
 

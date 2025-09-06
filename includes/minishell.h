@@ -229,6 +229,10 @@ unset(char *args[], t_map *env);
 int
 env(char *args[], t_map *env);
 
+// exit.c
+int
+ms_exit(char *args[], t_shell *shell);
+
 // --- Utils ---
 
 // debug_utils.c
