@@ -150,6 +150,16 @@ count_redirs(t_token *token, int *in, int *out);
 char
 *remove_closed_quotes(char *str);
 
+// check_gramar.c
+void
+check_pipe(t_token *token, t_token **token_list);
+
+void
+check_redir(t_token *token, t_token **token_list);
+
+void
+check_word(t_token *token, t_token **token_list);
+
 // --- Expanding ---
 
 // expand.c
