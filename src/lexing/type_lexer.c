@@ -63,7 +63,6 @@ void	link_token_back(t_token *last_token, t_token *new_token)
 	new_token->prev = last_token;
 }
 
-// that's a lot of ifs you nasty bitch - Luna Mira Lage (Desoroxxx) 2025-08-08
 t_token_type	find_type(t_lexer *lexer)
 {
 	const char	c = lexer->line[lexer->cursor];
