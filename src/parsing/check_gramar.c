@@ -42,11 +42,25 @@ void	check_word(t_token *token, t_token **token_list)
 
 void	check_redir(t_token *token, t_token **token_list)
 {
-	if (token->next->type != WORD)
+	if (token->next->type == EMPTY)
 	{
 		ft_fprintf(STDERR_FILENO, ANSI_RED SHELL_NAME
 			" [Error]: Syntax error near unexpected token newline\n"
 			ANSI_RESET);
+		free_tokens(token_list);
+	}
+	else if (token->next->type == PIPE)
+	{
+		ft_fprintf(STDERR_FILENO, ANSI_RED SHELL_NAME
+			" [Error]: Syntax error near unexpected token '|'\n"
+			ANSI_RESET);
+		free_tokens(token_list);
+	}
+	else if (token->next->type == REDIR)
+	{
+		ft_fprintf(STDERR_FILENO, ANSI_RED SHELL_NAME
+			" [Error]: Syntax error near unexpected token '%s'\n"
+			ANSI_RESET, token->next->value);
 		free_tokens(token_list);
 	}
 }
