@@ -28,13 +28,18 @@ int	count_pipes(t_token **token_list)
 	return (count);
 }
 
-static int	count(t_token *token, t_token_type type)
+static int	count_args(t_token *token)
 {
 	int	count;
 
 	count = 0;
-	while (token->type == type)
+	while (token->type != PIPE && token->type != EMPTY)
 	{
+		if (token->type == REDIR)
+		{
+			token = token->next->next;
+			continue;
+		}
 		token = token->next;
 		count++;
 	}
@@ -45,12 +50,17 @@ bool	parse_words(t_cmd *cmd, t_token **token_ptr)
 {
 	int	i;
 
-	cmd->args = ft_calloc(sizeof(char *), count(*token_ptr, WORD) + 1);
+	cmd->args = ft_calloc(sizeof(char *), count_args(*token_ptr) + 1);
 	if (cmd->args == NULL)
 		return (false);
 	i = 0;
-	while ((*token_ptr)->type == WORD)
+	while ((*token_ptr)->type != PIPE && (*token_ptr)->type != EMPTY)
 	{
+		if ((*token_ptr)->type  == REDIR)
+		{
+			*token_ptr = (*token_ptr)->next->next;
+			continue;
+		}
 		cmd->args[i] = ft_strdup((*token_ptr)->value);
 		if (cmd->args[i] == NULL)
 			return (false);

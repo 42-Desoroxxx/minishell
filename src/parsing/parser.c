@@ -16,16 +16,8 @@ static bool	build_cmd_line(t_token **token_ptr, t_shell *shell, t_cmd *cmd)
 {
 	if ((*token_ptr)->type == PIPE)
 		*token_ptr = (*token_ptr)->next;
-	if ((*token_ptr)->type == REDIR)
-	{
-		if (!parse_redirs(cmd, token_ptr, shell)
-			|| !parse_words(cmd, token_ptr))
-			return (false);
-	}
-	else
-		if (!parse_words(cmd, token_ptr)
-			|| !parse_redirs(cmd, token_ptr, shell))
-			return (false);
+	if (!parse_redirs(cmd, token_ptr, shell) || !parse_words(cmd, token_ptr))
+		return (false);
 	return (true);
 }
 
