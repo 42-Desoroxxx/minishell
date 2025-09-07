@@ -12,37 +12,73 @@
 
 #include <minishell.h>
 
-static bool	check_number(const char *str)
+static bool	count_digits(const char *str, int *count)
 {
-	int	digit_count;
 	int	i;
 
-	if (str[0] == '-' || str[0] == '+')
-		i = 0;
-	else
-		i = -1;
-	digit_count = 0;
+	i = -1;
 	while (str[++i] != '\0')
 	{
 		if (!ft_isdigit(str[i]))
 			return (false);
-		digit_count++;
+		(*count)++;
 	}
-	if (digit_count > 20)
-		return (false);
 	return (true);
+}
+
+static bool	check_overflow(const char *str, bool negative)
+{
+	const static char	*positive_max = "9223372036854775807";
+	const static char	*negative_max = "9223372036854775808";
+
+	if (negative)
+		return (ft_strncmp(str, negative_max, ft_strlen(negative_max)) <= 0);
+	return (ft_strncmp(str, positive_max, ft_strlen(positive_max)) <= 0);
+}
+
+static bool	check_number(const char *str)
+{
+	int		digit_count;
+	bool	negative;
+	bool	empty;
+	int		i;
+
+	i = 0;
+	empty = true;
+	negative = false;
+	if (str[i] == '-' || str[i] == '+')
+		negative = str[i++] == '-';
+	while (str[i] == '0')
+	{
+		empty = false;
+		i++;
+	}
+	digit_count = 0;
+	if (!count_digits(&str[i], &digit_count))
+		return (false);
+	if ((empty && digit_count == 0) || digit_count > 19)
+		return (false);
+	if (digit_count < 19)
+		return (true);
+	return (check_overflow(&str[i], negative));
 }
 
 int	ms_exit(char *args[], t_shell *shell)
 {
 	long long	status;
 
-	ft_fprintf(2, "Bye!\n");
+	ft_fprintf(STDERR_FILENO, "Bye!\n");
 	if (args[1] == NULL)
 		exit(shell->exit_status);
+	if (args[2] != NULL)
+	{
+		ft_fprintf(STDERR_FILENO, ANSI_RED SHELL_NAME
+			" [Error]: exit: too many arguments\n" ANSI_RESET);
+		return (1);
+	}
 	if (!check_number(args[1]))
 	{
-		ft_fprintf(2, ANSI_RED SHELL_NAME
+		ft_fprintf(STDERR_FILENO, ANSI_RED SHELL_NAME
 			" [Error]: exit: %s: numeric argument required\n" ANSI_RESET,
 			args[1]);
 		exit(2);
