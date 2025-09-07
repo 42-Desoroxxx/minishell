@@ -38,7 +38,7 @@ static int	count_args(t_token *token)
 		if (token->type == REDIR)
 		{
 			token = token->next->next;
-			continue;
+			continue ;
 		}
 		token = token->next;
 		count++;
@@ -56,10 +56,10 @@ bool	parse_words(t_cmd *cmd, t_token **token_ptr)
 	i = 0;
 	while ((*token_ptr)->type != PIPE && (*token_ptr)->type != EMPTY)
 	{
-		if ((*token_ptr)->type  == REDIR)
+		if ((*token_ptr)->type == REDIR)
 		{
 			*token_ptr = (*token_ptr)->next->next;
-			continue;
+			continue ;
 		}
 		cmd->args[i] = ft_strdup((*token_ptr)->value);
 		if (cmd->args[i] == NULL)
