@@ -26,8 +26,8 @@
 # include <ft_data.h>
 # include <sys/wait.h>
 # include <stdint.h>
-#include <sys/stat.h>
-#include <errno.h>
+# include <sys/stat.h>
+# include <errno.h>
 
 # ifndef DEBUG
 #  define DEBUG false
@@ -205,6 +205,10 @@ echo(char *args[]);
 int
 cd(char *args[], t_map *env);
 
+// cd_utils.c
+void
+cd_print_error(const char *name);
+
 // pwd.c
 int
 pwd(char *args[]);
@@ -269,5 +273,9 @@ free_cmd_table(t_cmd_table **cmd_table_ptr);
 
 void
 free_tokens(t_token **token_list);
+
+// prompt_utils.c
+char
+*get_prompt(const t_shell *shell);
 
 #endif

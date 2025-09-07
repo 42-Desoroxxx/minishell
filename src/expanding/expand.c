@@ -12,13 +12,13 @@
 
 #include <minishell.h>
 
-static char *expand(char *str, int start, t_shell *shell, t_status quotes)
+static char	*expand(char *str, int start, t_shell *shell, t_status quotes)
 {
-	size_t  final_len;
-	char    *new_line;
-	int     key_len;
-	char    *value;
-	int     i;
+	size_t	final_len;
+	char	*new_line;
+	int		key_len;
+	char	*value;
+	int		i;
 
 	new_line = get_expand_key(str, start);
 	if (new_line == NULL)
@@ -38,31 +38,26 @@ static char *expand(char *str, int start, t_shell *shell, t_status quotes)
 	return (new_line);
 }
 
-char    *expand_str(char *str, t_shell *shell)
+char	*expand_str(char *str, t_shell *shell)
 {
-	t_status    quotes;
-	char        *line;
-	char        *tmp;
-	size_t      i;
+	t_status	quotes;
+	char		*line;
+	char		*tmp;
+	size_t		i;
 
 	i = -1;
 	quotes = NONE;
 	line = ft_strdup(str);
 	while (++i < ft_strlen(line))
 	{
-		// If outside quotes, handle $"..." and $'...' by removing the leading '$'
-		if (line[i] == '$' && quotes == NONE && (line[i + 1] == '"' || line[i + 1] == '\''))
+		if (line[i] == '$' && quotes == NONE
+			&& (line[i + 1] == '"' || line[i + 1] == '\''))
 		{
-			size_t len = ft_strlen(line);
-			// remove the '$' so the following quote is handled as an opening quote
-			ft_memmove(&line[i], &line[i + 1], len - i);
-			// step back so handle_quotes sees the quote on next iteration
+			ft_memmove(&line[i], &line[i + 1], ft_strlen(line) - i);
 			i--;
-			continue;
+			continue ;
 		}
-
 		handle_quotes(line[i], &quotes);
-
 		if (line[i] == '$' && quotes != QUOTE && is_valid_char(line[i + 1]))
 		{
 			tmp = expand(line, i, shell, quotes);
@@ -70,11 +65,8 @@ char    *expand_str(char *str, t_shell *shell)
 			if (tmp == NULL)
 				return (NULL);
 			line = tmp;
-
-			// Restart scanning from the beginning with a clean quote state
 			i = -1;
 			quotes = NONE;
-
 			if (line[0] == '\0')
 				break ;
 		}

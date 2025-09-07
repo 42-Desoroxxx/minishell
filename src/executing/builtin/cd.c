@@ -12,12 +12,6 @@
 
 #include <minishell.h>
 
-static void	print_error(const char *name)
-{
-	ft_fprintf(STDERR_FILENO, ANSI_RED SHELL_NAME
-		" [Error]: cd: %s\n" ANSI_RESET, name);
-}
-
 static char	*get_home(t_map *env)
 {
 	char	*home;
@@ -36,11 +30,24 @@ static char	*get_home(t_map *env)
 	}
 	if (home == NULL || home[0] == '\0' || ft_str_equal(tmp, "/"))
 	{
-		print_error("HOME not set");
+		cd_print_error("HOME not set");
+		if (tmp != NULL)
+			free(tmp);
 		return (NULL);
 	}
 	free(tmp);
 	return (home);
+}
+
+static char	*expand_tilde(char *target, t_map *env)
+{
+	const char	*home = get_home(env);
+	char		*tmp;
+
+	if (home == NULL)
+		return (NULL);
+	tmp = ft_strjoin(home, target + 1);
+	return (tmp);
 }
 
 static void	set_pwds(char *old_cwd, t_map *env)
@@ -53,6 +60,19 @@ static void	set_pwds(char *old_cwd, t_map *env)
 	free(cwd);
 }
 
+static char	*get_target(char *arg, t_map *env)
+{
+	if (arg == NULL)
+	{
+		if (get_home(env) == NULL)
+			return (NULL);
+		return (ft_strdup(get_home(env)));
+	}
+	if (arg[0] == '~')
+		return (expand_tilde(arg, env));
+	return (ft_strdup(arg));
+}
+
 int	cd(char *args[], t_map *env)
 {
 	char	*target;
@@ -60,22 +80,22 @@ int	cd(char *args[], t_map *env)
 
 	if (args[1] != NULL && args[2] != NULL)
 	{
-		print_error("too many arguments");
+		cd_print_error("too many arguments");
 		return (1);
 	}
-	target = args[1];
-	if (target == NULL || ft_str_equal(target, "~"))
-		target = get_home(env);
+	target = get_target(args[1], env);
 	if (target == NULL)
 		return (1);
 	cwd = getcwd(NULL, 0);
 	if (chdir(target) == -1)
 	{
-		perror(SHELL_NAME " [Error]: cd:");
+		perror(SHELL_NAME " [Error]: cd");
+		free(target);
 		free(cwd);
 		return (1);
 	}
 	set_pwds(cwd, env);
+	free(target);
 	free(cwd);
 	return (0);
 }
