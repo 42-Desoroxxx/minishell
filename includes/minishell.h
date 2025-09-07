@@ -212,6 +212,9 @@ int
 export(char *args[], t_map *env);
 
 // export_utils.c
+int
+key_cmp(const char *key_a, const char *key_b);
+
 void
 export_print_error(const char *name, const char *value, bool usage);
 

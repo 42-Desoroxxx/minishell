@@ -12,6 +12,33 @@
 
 #include <minishell.h>
 
+static void	set_value(t_map *env, char *key, char *value)
+{
+	bool	append;
+	char	*tmp;
+
+	tmp = ft_strchr(key, '+');
+	append = tmp != NULL;
+	if (tmp != NULL)
+		*tmp = '\0';
+	*value = '\0';
+	if (value[1] == '\0' && !append)
+		map_set(env, key, "");
+	else
+	{
+		value++;
+		tmp = NULL;
+		if (map_get(env, key) != NULL)
+		{
+			tmp = ft_strjoin(map_get(env, key), value);
+			map_set(env, key, tmp);
+			free(tmp);
+		}
+		else
+			map_set(env, key, value);
+	}
+}
+
 static void	process_arg(t_map *env, char *arg, uint8_t *status)
 {
 	char	*value;
@@ -24,28 +51,13 @@ static void	process_arg(t_map *env, char *arg, uint8_t *status)
 	}
 	value = ft_strchr(arg, '=');
 	if (value == NULL)
-		map_set(env, arg, NULL);
-	else
 	{
-		*value = '\0';
-		if (value[1] == '\0')
-			map_set(env, arg, "");
-		else
-			map_set(env, arg, value + 1);
+		if (map_get(env, arg) != NULL)
+			return ;
+		map_set(env, arg, NULL);
 	}
-}
-
-static int	key_cmp(const char *key_a, const char *key_b)
-{
-	const size_t	key_a_len = ft_strlen(key_a);
-	const size_t	key_b_len = ft_strlen(key_b);
-	size_t			max_len;
-
-	if (key_a_len > key_b_len)
-		max_len = key_a_len;
 	else
-		max_len = key_b_len;
-	return (ft_strncmp(key_a, key_b, max_len + 1));
+		set_value(env, arg, value);
 }
 
 static void	sort_entries(t_map_entry **entries, size_t n)

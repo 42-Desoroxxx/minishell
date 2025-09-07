@@ -12,6 +12,19 @@
 
 #include <minishell.h>
 
+int	key_cmp(const char *key_a, const char *key_b)
+{
+	const size_t	key_a_len = ft_strlen(key_a);
+	const size_t	key_b_len = ft_strlen(key_b);
+	size_t			max_len;
+
+	if (key_a_len > key_b_len)
+		max_len = key_a_len;
+	else
+		max_len = key_b_len;
+	return (ft_strncmp(key_a, key_b, max_len + 1));
+}
+
 void	export_print_error(const char *name, const char *value, bool usage)
 {
 	ft_fprintf(STDERR_FILENO, ANSI_RED SHELL_NAME
@@ -50,7 +63,12 @@ bool	is_valid_key(const char *str)
 		return (false);
 	i = 0;
 	while (str[++i] && str[i] != '=')
+	{
 		if (ft_isalnum((unsigned char) str[i]) == 0)
-			return (false);
+		{
+			if (!(str[i] == '+' && str[i + 1] == '='))
+				return (false);
+		}
+	}
 	return (true);
 }
