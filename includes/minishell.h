@@ -26,6 +26,8 @@
 # include <ft_data.h>
 # include <sys/wait.h>
 # include <stdint.h>
+#include <sys/stat.h>
+#include <errno.h>
 
 # ifndef DEBUG
 #  define DEBUG false
@@ -133,11 +135,11 @@ check_last(t_cmd *cmd);
 
 // parse_redirs.c
 bool
-parse_redirs(t_cmd *cmd, t_token **token_ptr, t_shell *shell);
+parse_redirs(t_cmd *cmd, t_token **token_ptr, t_token *token, t_shell *shell);
 
 // parse_heredoc.c
 int
-parse_heredoc(t_token *token, bool last, t_shell *shell);
+parse_heredoc(t_token *token, bool last, t_shell *shell, const int previous_fd);
 
 // pipeline.c
 bool

@@ -47,29 +47,29 @@ static int	parse_append(t_token *token, const bool last)
 	return (-2);
 }
 
-bool	parse_redirs(t_cmd *cmd, t_token **token_ptr, t_shell *shell)
+bool	parse_redirs(t_cmd *cmd, t_token **token_ptr, t_token *token,
+	t_shell *shell)
 {
 	int		total;
 	int		max[2];
 	int		in;
 	int		out;
-	t_token	*token;
 
 	total = count_redirs(*token_ptr, &max[0], &max[1]) + 1;
 	in = 0;
 	out = 0;
-	token = *token_ptr;
 	while (--total != 0)
 	{
 		while (token->type != REDIR)
 			token = token->next;
-		if (ft_strncmp(token->value, "<", 2) == 0)
+		if (ft_str_equal(token->value, "<") && cmd->in_redir != -1)
 			cmd->in_redir = parse_redir(token->next, ++in == max[0]);
-		else if (ft_strncmp(token->value, "<<", 3) == 0)
-			cmd->in_redir = parse_heredoc(token->next, ++in == max[0], shell);
-		else if (ft_strncmp(token->value, ">", 2) == 0)
+		else if (ft_str_equal(token->value, "<<"))
+			cmd->in_redir = parse_heredoc(token->next, ++in == max[0], shell,
+					cmd->in_redir);
+		else if (ft_str_equal(token->value, ">") && cmd->out_redir != -1)
 			cmd->out_redir = parse_overwrite(token->next, ++out == max[1]);
-		else if (ft_strncmp(token->value, ">>", 3) == 0)
+		else if (ft_str_equal(token->value, ">>") && cmd->out_redir != -1)
 			cmd->out_redir = parse_append(token->next, ++out == max[1]);
 		token = token->next;
 	}

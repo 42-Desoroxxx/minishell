@@ -68,7 +68,8 @@ static bool	should_expand(char *delimiter)
 		&& ft_strchr(delimiter, '"') == 0);
 }
 
-int	parse_heredoc(t_token *token, bool last, t_shell *shell)
+int	parse_heredoc(t_token *token, bool last, t_shell *shell,
+	const int previous_fd)
 {
 	char	rnd_filename[5 + RANDOM_STRING_LEN + 1];
 	char	*delimiter;
@@ -83,12 +84,14 @@ int	parse_heredoc(t_token *token, bool last, t_shell *shell)
 	fd = open(rnd_filename, O_CREAT | O_WRONLY | O_CLOEXEC | O_TRUNC, 0644);
 	if (fd < 0)
 		return (-1);
-	ft_printf(SHELL_NAME ": Here-document, waiting for `%s`\n", delimiter);
+	// ft_printf(SHELL_NAME ": Here-document, waiting for `%s`\n", delimiter);
 	read_heredoc_input(fd, delimiter, should_expand(token->value), shell);
 	free(delimiter);
 	close(fd);
-	if (last)
+	if (last && previous_fd != -1)
 		return (open(rnd_filename, O_RDONLY | O_CLOEXEC));
 	unlink(rnd_filename);
+	if (previous_fd == -1)
+		return (-1);
 	return (-2);
 }
