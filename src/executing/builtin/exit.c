@@ -37,7 +37,7 @@ int	ms_exit(char *args[], t_shell *shell)
 {
 	long long	status;
 
-	ft_printf("Bye!\n");
+	ft_fprintf(2, "Bye!\n");
 	if (args[1] == NULL)
 		exit(shell->exit_status);
 	if (!check_number(args[1]))
