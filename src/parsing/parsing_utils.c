@@ -28,8 +28,9 @@ int	count_redirs(t_token *token, int *in, int *out)
 			if (ft_strncmp(token->value, ">", 1) == 0)
 				(*out)++;
 			total++;
+			token = token->next;
 		}
-		token = token->next->next;
+		token = token->next;
 	}
 	return (total);
 }
