@@ -28,7 +28,7 @@ static void	set_value(t_map *env, char *key, char *value)
 	{
 		value++;
 		tmp = NULL;
-		if (map_get(env, key) != NULL)
+		if (map_get(env, key) != NULL && append)
 		{
 			tmp = ft_strjoin(map_get(env, key), value);
 			map_set(env, key, tmp);

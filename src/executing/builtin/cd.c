@@ -64,7 +64,7 @@ int	cd(char *args[], t_map *env)
 		return (1);
 	}
 	target = args[1];
-	if (target == NULL)
+	if (target == NULL || ft_str_equal(target, "~"))
 		target = get_home(env);
 	if (target == NULL)
 		return (1);

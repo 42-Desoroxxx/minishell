@@ -80,7 +80,8 @@ void	handle_quotes(char c, t_status *quotes)
 
 bool	is_valid_char(char c)
 {
-	if (c == ' ' || c == '\0' || c == '/' || c == '\\' || c == '.')
+	if (c == ' ' || c == '\0' || c == '/' || c == '\\' || c == '.' || c == '=' || c == '$'
+		|| c == '\'' || c == '"')
 		return (false);
 	return (true);
 }

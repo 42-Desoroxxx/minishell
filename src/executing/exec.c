@@ -95,7 +95,8 @@ static char	*get_path(t_cmd *cmd, t_shell *shell)
 	char	*path;
 
 	path = NULL;
-	if (cmd->args[0][0] != '\0' && ft_strchr(cmd->args[0], '/') == NULL)
+	if (map_get(&shell->env, "PATH") != NULL
+		&& cmd->args[0][0] != '\0' && ft_strchr(cmd->args[0], '/') == NULL)
 		path = find_in_path(shell->env, cmd->args[0]);
 	else if (cmd->args[0][0] != '\0')
 		path = ft_strdup(cmd->args[0]);
@@ -158,6 +159,7 @@ void	exec_table(t_cmd_table *cmd_table, t_shell *shell)
 			}
 			if (pid == 0)
 			{
+				int status2;
 				signal(SIGQUIT, SIG_DFL);
 				signal(SIGINT, SIG_DFL);
 				if (current->in_redir > 0)
@@ -167,16 +169,29 @@ void	exec_table(t_cmd_table *cmd_table, t_shell *shell)
 				for (size_t j = 0; j < cmd_table->size; j++)
 				{
 					if (cmd_table->cmds[j].in_redir > 0)
+					{
 						close(cmd_table->cmds[j].in_redir);
+						cmd_table->cmds[j].in_redir = 0;
+					}
 					if (cmd_table->cmds[j].out_redir > 0)
+					{
 						close(cmd_table->cmds[j].out_redir);
+						cmd_table->cmds[j].out_redir = 0;
+					}
 				}
 				if (current->in_redir == -1 || current->out_redir == -1)
 				{
 					perror(SHELL_NAME);
+					free(pids);
+					free_cmd_table(&cmd_table);
+					map_free(&shell->env);
 					exit(1);
 				}
-				exit(exec_builtin(current, shell));
+				status2 = exec_builtin(current, shell);
+				free(pids);
+				free_cmd_table(&cmd_table);
+				map_free(&shell->env);
+				exit(status2);
 			}
 			if (current->in_redir > 0)
 			{
@@ -192,13 +207,9 @@ void	exec_table(t_cmd_table *cmd_table, t_shell *shell)
 		}
 		else
 		{
-			char	**envp;
-
-			envp = create_envp(shell->env);
 			pid = fork();
 			if (pid < 0)
 			{
-				free_envp(&envp);
 				shell->exit_status = errno;
 				perror(SHELL_NAME);
 				free(pids);
@@ -206,6 +217,7 @@ void	exec_table(t_cmd_table *cmd_table, t_shell *shell)
 			}
 			if (pid == 0)
 			{
+				char	**envp;
 				char	*path;
 				if (current->in_redir == -1 || current->out_redir == -1)
 				{
@@ -221,22 +233,66 @@ void	exec_table(t_cmd_table *cmd_table, t_shell *shell)
 				for (size_t j = 0; j < cmd_table->size; j++)
 				{
 					if (cmd_table->cmds[j].in_redir > 0)
+					{
 						close(cmd_table->cmds[j].in_redir);
+						cmd_table->cmds[j].in_redir = 0;
+					}
 					if (cmd_table->cmds[j].out_redir > 0)
+					{
 						close(cmd_table->cmds[j].out_redir);
+						cmd_table->cmds[j].out_redir = 0;
+					}
 				}
 				if (current->args == NULL || current->args[0] == NULL)
 					exit(0);
 				path = get_path(current, shell);
 				if (path == NULL)
+				{
+					free(pids);
+					free_cmd_table(&cmd_table);
+					map_free(&shell->env);
 					exit(127);
+				}
+				envp = create_envp(shell->env);
+				if (envp == NULL)
+				{
+					free(pids);
+					free_cmd_table(&cmd_table);
+					map_free(&shell->env);
+					free(path);
+					exit(1);
+				}
 				execve(path, current->args, envp);
+				int err = errno;
+				if (err == ENOEXEC)
+				{
+					size_t argc = 0;
+					while (current->args[argc] != NULL)
+						argc++;
+					char **sh_argv = malloc((argc + 2) * sizeof(char *));
+					if (sh_argv == NULL)
+					{
+						free(path);
+						exit(1);
+					}
+					sh_argv[0] = "sh";
+					sh_argv[1] = path;
+					for (size_t k = 1; k < argc; k++)
+						sh_argv[k + 1] = current->args[k];
+					sh_argv[argc + 1] = NULL;
+					execve("/bin/sh", sh_argv, envp);
+					err = errno;
+					free(sh_argv);
+				}
+				/* Optional: print an error that matches bash style (uncomment if required) */
+				/*
+				ft_fprintf(STDERR_FILENO, SHELL_NAME ": %s: %s\n", path, strerror(err));
+				*/
+				free_envp(&envp);
 				free(path);
-				if (errno == ENOENT)
+				if (err == ENOENT)
 					exit(127);
-				if (errno == EACCES)
-					exit(126);
-				exit(1);
+				exit(126);
 			}
 			if (current->in_redir > 0)
 			{
@@ -249,7 +305,6 @@ void	exec_table(t_cmd_table *cmd_table, t_shell *shell)
 				current->out_redir = 0;
 			}
 			pids[npids++] = pid;
-			free_envp(&envp);
 		}
 	}
 	for (int j = 0; j < npids; j++)
