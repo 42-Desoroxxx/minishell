@@ -99,7 +99,9 @@ bool	expand_tokens(t_token **token_ptr, t_shell *shell)
 	while (token->type != EMPTY)
 	{
 		if (token->type == WORD
-			&& (token->prev == NULL || token->prev->type != REDIR))
+			&& (token->prev == NULL || token->prev->type != REDIR
+				|| !(token->prev->value[0] == '<'
+					&& token->prev->value[1] == '<')))
 		{
 			token->value = expand_str(token->value, shell);
 			if (token->value == NULL)
