@@ -63,7 +63,7 @@ SRC_FILES := \
 	lexing/lexer.c lexing/type_lexer.c \
 	expanding/expand.c expanding/expand_tokens.c expanding/expand_utils.c \
 	parsing/parser.c parsing/check_grammar.c parsing/parse_heredoc.c parsing/parse_n_count.c parsing/parse_redirs.c parsing/pipeline.c \
-	executing/path.c executing/exec.c \
+	executing/path.c executing/exec.c executing/childs.c executing/builtins.c executing/exec_utils.c \
 	executing/builtin/echo.c executing/builtin/cd.c executing/builtin/cd_utils.c executing/builtin/pwd.c executing/builtin/export.c executing/builtin/export_utils.c executing/builtin/unset.c executing/builtin/env.c executing/builtin/exit.c
 SRCS := $(addprefix $(SRC)/,$(SRC_FILES))
 OBJS := $(patsubst $(SRC)/%.c,$(OBJ)/%.o,$(SRCS))

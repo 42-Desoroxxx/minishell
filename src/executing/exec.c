@@ -13,129 +13,82 @@
 #include <errno.h>
 #include <minishell.h>
 
-static bool	is_builtin(const t_cmd *cmd)
+static void	wait_for_childs(pid_t *pids, size_t pid_count, t_shell *shell)
 {
-	const char	*builtins[] = {"echo", "cd", "pwd", "export", "unset",
-		"env", "exit", NULL};
-	int			i;
+	int	status;
+	size_t	i;
 
-	i = -1;
-	while (builtins[++i] != NULL)
-		if (ft_str_equal(cmd->args[0], builtins[i]))
-			return (true);
+	i = 0;
+	while (i < pid_count)
+	{
+		if (waitpid(pids[i], &status, 0) == -1)
+		{
+			shell->exit_status = errno;
+			return ;
+		}
+		if (i == pid_count - 1)
+		{
+			if (WIFEXITED(status))
+				shell->exit_status = WEXITSTATUS(status);
+			else if (WIFSIGNALED(status))
+				shell->exit_status = 128 + WTERMSIG(status);
+		}
+		i++;
+	}
+}
+
+static bool	exec_single_cmd(t_cmd *cmd, t_shell *shell)
+{
+	if (cmd->args == NULL || cmd->args[0] == NULL)
+	{
+		if (cmd->in_redir == -1 || cmd->out_redir == -1)
+		{
+			perror(SHELL_NAME);
+			shell->exit_status = 1;
+		}
+		return (true);
+	}
+	if (is_builtin(cmd))
+	{
+		exec_lonely_builtin(cmd, shell);
+		return (true);
+	}
 	return (false);
 }
 
-static int	exec_builtin(t_cmd *cmd, t_shell *shell)
+static pid_t exec_cmd(t_cmd *cmd, t_shell *shell, pid_t *pids,
+	t_cmd_table *cmd_table)
 {
-	if (ft_str_equal(cmd->args[0], "echo"))
-		return (echo(cmd->args));
-	if (ft_str_equal(cmd->args[0], "cd"))
-		return (cd(cmd->args, &shell->env));
-	if (ft_str_equal(cmd->args[0], "pwd"))
-		return (pwd(cmd->args));
-	if (ft_str_equal(cmd->args[0], "export"))
-		return (export(cmd->args, &shell->env));
-	if (ft_str_equal(cmd->args[0], "unset"))
-		return (unset(cmd->args, &shell->env));
-	if (ft_str_equal(cmd->args[0], "env"))
-		return (env(cmd->args, &shell->env));
-	if (ft_str_equal(cmd->args[0], "exit"))
-		return (ms_exit(cmd->args, shell));
-	return (1);
-}
+	pid_t	pid;
 
-static void	restore_redirs(t_cmd *cmd, int fd_in_backup, int fd_out_backup)
-{
-	if (fd_in_backup > 0)
+	pid = fork();
+	if (pid < 0)
 	{
-		dup2(fd_in_backup, STDIN_FILENO);
-		close(fd_in_backup);
-		close(cmd->in_redir);
-		cmd->in_redir = 0;
-	}
-	if (fd_out_backup > 0)
-	{
-		dup2(fd_out_backup, STDOUT_FILENO);
-		close(fd_out_backup);
-		close(cmd->out_redir);
-		cmd->out_redir = 0;
-	}
-}
-
-static void	exec_lonely_builtin(t_cmd *cmd, t_shell *shell)
-{
-	int		fd_in_backup;
-	int		fd_out_backup;
-
-	fd_in_backup = -1;
-	fd_out_backup = -1;
-	if (cmd->in_redir == -1 || cmd->out_redir == -1)
-	{
+		shell->exit_status = errno;
 		perror(SHELL_NAME);
-		shell->exit_status = 1;
-		return ;
+		free(pids);
+		return (-1);
 	}
-	if (cmd->in_redir > 0)
+	if (pid == 0)
 	{
-		fd_in_backup = dup(STDIN_FILENO);
-		dup2(cmd->in_redir, STDIN_FILENO);
+		setup_child(cmd, shell, pids, cmd_table);
+		if (is_builtin(cmd))
+			child_builtin(cmd, shell, pids, cmd_table);
+		else
+			child_external(cmd, shell, pids, cmd_table);
 	}
-	if (cmd->out_redir > 0)
-	{
-		fd_out_backup = dup(STDOUT_FILENO);
-		dup2(cmd->out_redir, STDOUT_FILENO);
-	}
-	shell->exit_status = exec_builtin(cmd, shell);
-	restore_redirs(cmd, fd_in_backup, fd_out_backup);
-}
-
-static char	*get_path(t_cmd *cmd, t_shell *shell)
-{
-	char	*path;
-
-	path = NULL;
-	if (map_get(&shell->env, "PATH") != NULL
-		&& cmd->args[0][0] != '\0' && ft_strchr(cmd->args[0], '/') == NULL)
-		path = find_in_path(shell->env, cmd->args[0]);
-	else if (cmd->args[0][0] != '\0')
-		path = ft_strdup(cmd->args[0]);
-	if (path == NULL || path[0] == '\0')
-	{
-		ft_fprintf(STDERR_FILENO, ANSI_RED SHELL_NAME " [Error]: "
-			"command not found (%s)\n" ANSI_RESET, cmd->args[0]);
-		shell->exit_status = 127;
-		return (NULL);
-	}
-	return (path);
+	close_fds(cmd);
+	return (pid);
 }
 
 void	exec_table(t_cmd_table *cmd_table, t_shell *shell)
 {
-	t_cmd	*current;
-	size_t	i;
 	pid_t	*pids;
-	int		npids = 0;
-	int		status;
+	size_t	i;
 
-	current = &cmd_table->cmds[0];
 	if (cmd_table->size == 1)
-	{
-		if (current->args == NULL || current->args[0] == NULL)
-		{
-			if (current->in_redir == -1 || current->out_redir == -1)
-			{
-				perror(SHELL_NAME);
-				shell->exit_status = 1;
-			}
+		if (exec_single_cmd(&cmd_table->cmds[0], shell))
 			return ;
-		}
-		if (is_builtin(current))
-		{
-			exec_lonely_builtin(current, shell);
-			return ;
-		}
-	}
 	pids = ft_calloc(cmd_table->size + 1, sizeof(pid_t));
 	if (pids == NULL)
 	{
@@ -145,183 +98,10 @@ void	exec_table(t_cmd_table *cmd_table, t_shell *shell)
 	i = -1;
 	while (++i < cmd_table->size)
 	{
-		pid_t	pid;
-
-		current = &cmd_table->cmds[i];
-		if (is_builtin(current))
-		{
-			pid = fork();
-			if (pid < 0)
-			{
-				shell->exit_status = errno;
-				free(pids);
-				return ;
-			}
-			if (pid == 0)
-			{
-				int status2;
-				signal(SIGQUIT, SIG_DFL);
-				signal(SIGINT, SIG_DFL);
-				if (current->in_redir > 0)
-					dup2(current->in_redir, STDIN_FILENO);
-				if (current->out_redir > 0)
-					dup2(current->out_redir, STDOUT_FILENO);
-				for (size_t j = 0; j < cmd_table->size; j++)
-				{
-					if (cmd_table->cmds[j].in_redir > 0)
-					{
-						close(cmd_table->cmds[j].in_redir);
-						cmd_table->cmds[j].in_redir = 0;
-					}
-					if (cmd_table->cmds[j].out_redir > 0)
-					{
-						close(cmd_table->cmds[j].out_redir);
-						cmd_table->cmds[j].out_redir = 0;
-					}
-				}
-				if (current->in_redir == -1 || current->out_redir == -1)
-				{
-					perror(SHELL_NAME);
-					free(pids);
-					free_cmd_table(&cmd_table);
-					map_free(&shell->env);
-					exit(1);
-				}
-				status2 = exec_builtin(current, shell);
-				free(pids);
-				free_cmd_table(&cmd_table);
-				map_free(&shell->env);
-				exit(status2);
-			}
-			if (current->in_redir > 0)
-			{
-				close(current->in_redir);
-				current->in_redir = 0;
-			}
-			if (current->out_redir > 0)
-			{
-				close(current->out_redir);
-				current->out_redir = 0;
-			}
-			pids[npids++] = pid;
-		}
-		else
-		{
-			pid = fork();
-			if (pid < 0)
-			{
-				shell->exit_status = errno;
-				perror(SHELL_NAME);
-				free(pids);
-				return ;
-			}
-			if (pid == 0)
-			{
-				char	**envp;
-				char	*path;
-				if (current->in_redir == -1 || current->out_redir == -1)
-				{
-					perror(SHELL_NAME);
-					exit(1);
-				}
-				signal(SIGQUIT, SIG_DFL);
-				signal(SIGINT, SIG_DFL);
-				if (current->in_redir > 0)
-					dup2(current->in_redir, STDIN_FILENO);
-				if (current->out_redir > 0)
-					dup2(current->out_redir, STDOUT_FILENO);
-				for (size_t j = 0; j < cmd_table->size; j++)
-				{
-					if (cmd_table->cmds[j].in_redir > 0)
-					{
-						close(cmd_table->cmds[j].in_redir);
-						cmd_table->cmds[j].in_redir = 0;
-					}
-					if (cmd_table->cmds[j].out_redir > 0)
-					{
-						close(cmd_table->cmds[j].out_redir);
-						cmd_table->cmds[j].out_redir = 0;
-					}
-				}
-				if (current->args == NULL || current->args[0] == NULL)
-					exit(0);
-				path = get_path(current, shell);
-				if (path == NULL)
-				{
-					free(pids);
-					free_cmd_table(&cmd_table);
-					map_free(&shell->env);
-					exit(127);
-				}
-				envp = create_envp(shell->env);
-				if (envp == NULL)
-				{
-					free(pids);
-					free_cmd_table(&cmd_table);
-					map_free(&shell->env);
-					free(path);
-					exit(1);
-				}
-				execve(path, current->args, envp);
-				int err = errno;
-				if (err == ENOEXEC)
-				{
-					size_t argc = 0;
-					while (current->args[argc] != NULL)
-						argc++;
-					char **sh_argv = malloc((argc + 2) * sizeof(char *));
-					if (sh_argv == NULL)
-					{
-						free(path);
-						exit(1);
-					}
-					sh_argv[0] = "sh";
-					sh_argv[1] = path;
-					for (size_t k = 1; k < argc; k++)
-						sh_argv[k + 1] = current->args[k];
-					sh_argv[argc + 1] = NULL;
-					execve("/bin/sh", sh_argv, envp);
-					err = errno;
-					free(sh_argv);
-				}
-				/* Optional: print an error that matches bash style (uncomment if required) */
-				/*
-				ft_fprintf(STDERR_FILENO, SHELL_NAME ": %s: %s\n", path, strerror(err));
-				*/
-				free_envp(&envp);
-				free(path);
-				if (err == ENOENT)
-					exit(127);
-				exit(126);
-			}
-			if (current->in_redir > 0)
-			{
-				close(current->in_redir);
-				current->in_redir = 0;
-			}
-			if (current->out_redir > 0)
-			{
-				close(current->out_redir);
-				current->out_redir = 0;
-			}
-			pids[npids++] = pid;
-		}
-	}
-	for (int j = 0; j < npids; j++)
-	{
-		if (waitpid(pids[j], &status, 0) == -1)
-		{
-			shell->exit_status = errno;
-			free(pids);
+		pids[i] = exec_cmd(&cmd_table->cmds[i], shell, pids, cmd_table);
+		if (pids[i] == -1)
 			return ;
-		}
-		if (j == npids - 1)
-		{
-			if (WIFEXITED(status))
-				shell->exit_status = WEXITSTATUS(status);
-			else if (WIFSIGNALED(status))
-				shell->exit_status = 128 + WTERMSIG(status);
-		}
 	}
+	wait_for_childs(pids, i, shell);
 	free(pids);
 }

@@ -182,6 +182,33 @@ char
 void
 exec_table(t_cmd_table *cmd_table, t_shell *shell);
 
+// childs.c
+void
+free_child(pid_t *pids, t_cmd_table *cmd_table, t_map *env);
+
+void
+setup_child(t_cmd *cmd, t_shell *shell, pid_t *pids, t_cmd_table *cmd_table);
+
+void
+child_external(t_cmd *cmd, t_shell *shell, pid_t *pids, t_cmd_table *cmd_table);
+
+void
+child_builtin(t_cmd *cmd, t_shell *shell, pid_t *pids, t_cmd_table *cmd_table);
+
+// exec_utils.c
+void
+close_fds(t_cmd *cmd);
+
+// buitlins.c
+bool
+is_builtin(const t_cmd *cmd);
+
+int
+exec_builtin(t_cmd *cmd, t_shell *shell);
+
+void
+exec_lonely_builtin(t_cmd *cmd, t_shell *shell);
+
 // echo.c
 int
 echo(char *args[]);
