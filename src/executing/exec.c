@@ -73,7 +73,6 @@ static pid_t	exec_cmd(t_cmd *cmd, t_shell *shell, pid_t *pids,
 	{
 		shell->exit_status = errno;
 		perror(SHELL_NAME);
-		free(pids);
 		return (-1);
 	}
 	if (pid == 0)
@@ -109,7 +108,7 @@ void	exec_table(t_cmd_table *cmd_table, t_shell *shell)
 		if (pids[i] == -1)
 		{
 			close_all_fds(cmd_table);
-			return ;
+			break ;
 		}
 	}
 	wait_for_childs(pids, i, shell);
