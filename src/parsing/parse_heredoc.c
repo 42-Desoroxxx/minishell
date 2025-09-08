@@ -37,10 +37,18 @@ static char	*random_string(void)
 	return ((char *) string);
 }
 
+static void	print_error(const int line_count, const char *delimiter)
+{
+	ft_fprintf(STDERR_FILENO, "\n" ANSI_YELLOW SHELL_NAME
+				" [WARNING]: Here-document at line %d delimited by end-of-file"
+				" (wanted `%s`)\n" ANSI_RESET, line_count + 1, delimiter);
+}
+
 static void	read_heredoc_input(int fd, char *delimiter, bool expand,
 	t_shell *shell)
 {
 	char		*line;
+	char		*tmp;
 	int			line_count;
 
 	line_count = 0;
@@ -48,20 +56,19 @@ static void	read_heredoc_input(int fd, char *delimiter, bool expand,
 	{
 		line = readline("> ");
 		if (line == NULL)
-			ft_fprintf(STDERR_FILENO, "\n" ANSI_YELLOW SHELL_NAME
-				" [WARNING]: Here-document at line %d delimited by end-of-file"
-				" (wanted `%s`)\n" ANSI_RESET, line_count + 1, delimiter);
-		if (line == NULL)
+			print_error(line_count, delimiter);
+		if (line == NULL || ft_str_equal(line, delimiter))
 			break ;
-		if (!ft_str_equal(line, delimiter))
+		line_count++;
+		if (expand)
 		{
-			line_count++;
-			if (expand)
-				line = expand_str(line, shell);
-			ft_fprintf(fd, "%s\n", line);
+			tmp = expand_str(line, shell);
+			if (tmp == NULL)
+				break ;
+			free(line);
+			line = tmp;
 		}
-		else
-			break ;
+		ft_fprintf(fd, "%s\n", line);
 		free(line);
 	}
 	free(line);

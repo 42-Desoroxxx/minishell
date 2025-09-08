@@ -36,20 +36,28 @@ static bool	remove_quotes_from_token(t_token *token)
 	return (true);
 }
 
+static bool	should_expand_token(t_token *token)
+{
+	return (token->type == WORD
+		&& (token->prev == NULL || token->prev->type != REDIR
+				|| !ft_str_equal(token->prev->value, "<<")));
+}
+
 bool	expand_tokens(t_token **token_ptr, t_shell *shell)
 {
 	t_token	*token;
+	char	*tmp;
 
 	token = *token_ptr;
 	while (token->type != EMPTY)
 	{
-		if (token->type == WORD
-			&& (token->prev == NULL || token->prev->type != REDIR
-				|| !ft_str_equal(token->prev->value, "<<")))
+		if (should_expand_token(token))
 		{
-			token->value = expand_str(token->value, shell);
-			if (token->value == NULL)
+			tmp = expand_str(token->value, shell);
+			if (tmp == NULL)
 				return (false);
+			free(token->value);
+			token->value = tmp;
 			if (token->value[0] == '\0')
 			{
 				delete_token(token_ptr, token);

@@ -78,6 +78,8 @@ char	*expand_str(char *str, t_shell *shell)
 
 	quotes = NONE;
 	line = ft_strdup(str);
+	if (line == NULL)
+		return (NULL);
 	i = 0;
 	while (line[i])
 	{
@@ -88,11 +90,9 @@ char	*expand_str(char *str, t_shell *shell)
 		{
 			if (do_expand(&line, &i, &quotes, shell))
 				continue ;
-			free(str);
 			return (NULL);
 		}
 		i++;
 	}
-	free(str);
 	return (line);
 }
