@@ -25,3 +25,12 @@ void	close_fds(t_cmd *cmd)
 		cmd->out_redir = 0;
 	}
 }
+
+void	close_all_fds(t_cmd_table *cmd_table)
+{
+	size_t	i;
+
+	i = -1;
+	while (++i < cmd_table->size)
+		close_fds(&cmd_table->cmds[i]);
+}

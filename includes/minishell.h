@@ -16,17 +16,11 @@
 # include <libft.h>
 # include <ft_memory.h>
 # include <ft_printf.h>
-# include <get_next_line.h>
-# include <signal.h>
-# include <stdio.h>
+# include <ft_data.h>
 # include <readline/readline.h>
 # include <readline/history.h>
-# include <linux/limits.h>
 # include <fcntl.h>
-# include <ft_data.h>
 # include <sys/wait.h>
-# include <stdint.h>
-# include <sys/stat.h>
 # include <errno.h>
 
 # define SHELL_NAME "Eepyshell"
@@ -202,12 +196,12 @@ free_external_child(pid_t *pids, t_cmd_table *cmd_table, t_map *env,
 char
 **create_envp(t_map *env, pid_t *pids, t_cmd_table *cmd_table, char *path);
 
-bool
-exec_sh(t_cmd *cmd, char *path, char **envp);
-
 // exec_utils.c
 void
 close_fds(t_cmd *cmd);
+
+void
+close_all_fds(t_cmd_table *cmd_table);
 
 // buitlins.c
 bool

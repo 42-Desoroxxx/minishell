@@ -46,33 +46,28 @@ static void	process(char *line, t_shell *shell)
 	t_cmd_table	*cmd_table;
 	t_token		*tokens;
 
+	if (*skip_whitespace(line) == '\0')
+	{
+		free(line);
+		return ;
+	}
 	if (line[0] != ' ')
 		add_history(line);
 	tokens = lexer(line);
 	free(line);
-	if (tokens != NULL)
+	if (tokens == NULL)
+		return ;
+	cmd_table = parser(&tokens, shell);
+	free_tokens(&tokens);
+	if (cmd_table == NULL)
 	{
-		cmd_table = parser(&tokens, shell);
-		free_tokens(&tokens);
-		if (cmd_table == NULL)
-		{
-			if (shell->exit_status != 2)
-				perror(SHELL_NAME);
-			free_cmd_table((t_cmd_table **) &cmd_table);
-			return ;
-		}
-		exec_table(cmd_table, shell);
+		if (shell->exit_status != 2)
+			perror(SHELL_NAME);
 		free_cmd_table((t_cmd_table **) &cmd_table);
+		return ;
 	}
-}
-
-static t_shell	setup(int argc, char *argv[], char *envp[])
-{
-	(void)argc;
-	(void)argv;
-	signal(SIGQUIT, SIG_IGN);
-	signal(SIGINT, handle_interupt);
-	return (create_shell(envp));
+	exec_table(cmd_table, shell);
+	free_cmd_table((t_cmd_table **) &cmd_table);
 }
 
 int	main(int argc, char *argv[], char *envp[])
@@ -81,23 +76,23 @@ int	main(int argc, char *argv[], char *envp[])
 	char		*line;
 	t_shell		shell;
 
-	shell = setup(argc, argv, envp);
+	(void)argc;
+	(void)argv;
+	signal(SIGQUIT, SIG_IGN);
+	signal(SIGINT, handle_interupt);
+	shell = create_shell(envp);
 	while (true)
 	{
 		prompt = get_prompt(&shell);
 		line = readline(prompt);
-		if (g_signal == SIGINT)
-			shell.exit_status = 130;
-		if (g_signal == SIGINT)
-			g_signal = 0;
 		free(prompt);
+		if (g_signal == SIGINT)
+		{
+			shell.exit_status = 130;
+			g_signal = 0;
+		}
 		if (line == NULL)
 			break ;
-		if (*skip_whitespace(line) == '\0')
-		{
-			free(line);
-			continue ;
-		}
 		process(line, &shell);
 	}
 	map_free(&shell.env);

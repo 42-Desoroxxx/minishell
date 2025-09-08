@@ -41,7 +41,7 @@ int	exec_builtin(t_cmd *cmd, t_shell *shell)
 		return (env(cmd->args, &shell->env));
 	if (ft_str_equal(cmd->args[0], "exit"))
 		return (ms_exit(cmd->args, shell));
-	return (1);
+	return (127);
 }
 
 static void	restore_redirs(t_cmd *cmd, int fd_in_backup, int fd_out_backup)
@@ -50,16 +50,13 @@ static void	restore_redirs(t_cmd *cmd, int fd_in_backup, int fd_out_backup)
 	{
 		dup2(fd_in_backup, STDIN_FILENO);
 		close(fd_in_backup);
-		close(cmd->in_redir);
-		cmd->in_redir = 0;
 	}
 	if (fd_out_backup > 0)
 	{
 		dup2(fd_out_backup, STDOUT_FILENO);
 		close(fd_out_backup);
-		close(cmd->out_redir);
-		cmd->out_redir = 0;
 	}
+	close_fds(cmd);
 }
 
 void	exec_lonely_builtin(t_cmd *cmd, t_shell *shell)

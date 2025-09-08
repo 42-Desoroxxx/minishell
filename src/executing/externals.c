@@ -66,28 +66,3 @@ char	**create_envp(t_map *env, pid_t *pids, t_cmd_table *cmd_table,
 	}
 	return (envp);
 }
-
-bool	exec_sh(t_cmd *cmd, char *path, char **envp)
-{
-	char	**sh_argv;
-	size_t	argc;
-	size_t	i;
-
-	argc = 0;
-	while (cmd->args[argc] != NULL)
-		argc++;
-	sh_argv = ft_calloc(argc + 2, sizeof(char *));
-	if (sh_argv == NULL)
-		return (false);
-	sh_argv[0] = "sh";
-	sh_argv[1] = path;
-	i = 1;
-	while (i < argc)
-	{
-		sh_argv[i + 1] = cmd->args[i];
-		i++;
-	}
-	execve("/bin/sh", sh_argv, envp);
-	free(sh_argv);
-	return (false);
-}

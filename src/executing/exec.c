@@ -18,25 +18,26 @@ static void	wait_for_childs(pid_t *pids, size_t pid_count, t_shell *shell)
 	int		status;
 	size_t	i;
 
-	i = 0;
-	while (i < pid_count)
+	i = -1;
+	while (++i < pid_count)
 	{
 		if (waitpid(pids[i], &status, 0) == -1)
 		{
 			shell->exit_status = errno;
 			return ;
 		}
-		if (i == pid_count - 1)
-		{
-			if (WIFEXITED(status))
-				shell->exit_status = WEXITSTATUS(status);
-			else if (WIFSIGNALED(status))
-				shell->exit_status = 128 + WTERMSIG(status);
-		}
-		i++;
+		if (i != pid_count - 1)
+			continue ;
+		if (WIFEXITED(status))
+			shell->exit_status = WEXITSTATUS(status);
+		else if (WIFSIGNALED(status))
+			shell->exit_status = 128 + WTERMSIG(status);
 	}
 }
 
+/**
+ * @return true if nothing needs to be further executed, false otherwise
+ */
 static bool	exec_single_cmd(t_cmd *cmd, t_shell *shell)
 {
 	if (cmd->args == NULL || cmd->args[0] == NULL)
@@ -98,7 +99,10 @@ void	exec_table(t_cmd_table *cmd_table, t_shell *shell)
 	{
 		pids[i] = exec_cmd(&cmd_table->cmds[i], shell, pids, cmd_table);
 		if (pids[i] == -1)
+		{
+			close_all_fds(cmd_table);
 			return ;
+		}
 	}
 	wait_for_childs(pids, i, shell);
 	free(pids);
