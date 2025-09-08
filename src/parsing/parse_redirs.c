@@ -47,6 +47,29 @@ static int	parse_append(t_token *token, const bool last)
 	return (-2);
 }
 
+static int	count_redirs(t_token *token, int *in, int *out)
+{
+	int	total;
+
+	total = 0;
+	*in = 0;
+	*out = 0;
+	while (token != NULL && token->type != PIPE && token->type != EMPTY)
+	{
+		if (token->type == REDIR)
+		{
+			if (ft_strncmp(token->value, "<", 1) == 0)
+				(*in)++;
+			if (ft_strncmp(token->value, ">", 1) == 0)
+				(*out)++;
+			total++;
+			token = token->next;
+		}
+		token = token->next;
+	}
+	return (total);
+}
+
 bool	parse_redirs(t_cmd *cmd, t_token **token_ptr, t_token *token,
 	t_shell *shell)
 {

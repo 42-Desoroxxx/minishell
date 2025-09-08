@@ -1,38 +1,31 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   parsing_utils.c                                    :+:      :+:    :+:   */
+/*   quotes_utils.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: llage <llage@student.42angouleme.fr>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/09/05 03:51:19 by llage             #+#    #+#             */
-/*   Updated: 2025/09/05 03:51:19 by llage            ###   ########.fr       */
+/*   Created: 2025/09/08 04:38:36 by llage             #+#    #+#             */
+/*   Updated: 2025/09/08 04:38:36 by llage            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <minishell.h>
 
-int	count_redirs(t_token *token, int *in, int *out)
+void	handle_quotes(const char c, t_status *quotes)
 {
-	int	total;
+	t_status	type;
 
-	total = 0;
-	*in = 0;
-	*out = 0;
-	while (token != NULL && token->type != PIPE && token->type != EMPTY)
-	{
-		if (token->type == REDIR)
-		{
-			if (ft_strncmp(token->value, "<", 1) == 0)
-				(*in)++;
-			if (ft_strncmp(token->value, ">", 1) == 0)
-				(*out)++;
-			total++;
-			token = token->next;
-		}
-		token = token->next;
-	}
-	return (total);
+	if (!is_quote(c))
+		return ;
+	if (c == '"')
+		type = DOUBLE;
+	else
+		type = QUOTE;
+	if (*quotes == NONE)
+		*quotes = type;
+	else if (*quotes == type)
+		*quotes = NONE;
 }
 
 static int	count_quotes_to_close(char *str)

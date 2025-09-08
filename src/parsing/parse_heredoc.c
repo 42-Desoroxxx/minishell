@@ -62,10 +62,9 @@ static void	read_heredoc_input(int fd, char *delimiter, bool expand,
 	free(line);
 }
 
-static bool	should_expand(char *delimiter)
+static bool	contains_quotes(char *delimiter)
 {
-	return (ft_strchr(delimiter, '\'') == 0
-		&& ft_strchr(delimiter, '"') == 0);
+	return (ft_strchr(delimiter, '\'') || ft_strchr(delimiter, '"'));
 }
 
 int	parse_heredoc(t_token *token, bool last, t_shell *shell,
@@ -85,7 +84,7 @@ int	parse_heredoc(t_token *token, bool last, t_shell *shell,
 	if (fd < 0)
 		return (-1);
 	// ft_printf(SHELL_NAME ": Here-document, waiting for `%s`\n", delimiter);
-	read_heredoc_input(fd, delimiter, should_expand(token->value), shell);
+	read_heredoc_input(fd, delimiter, !contains_quotes(token->value), shell);
 	free(delimiter);
 	close(fd);
 	if (last && previous_fd != -1)

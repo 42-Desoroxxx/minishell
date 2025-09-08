@@ -12,118 +12,87 @@
 
 #include <minishell.h>
 
-static char	*expand(char *str, int start, t_shell *shell, t_status quotes)
+static char	*get_expand_value(char *key, t_shell *shell)
+{
+	if (ft_str_equal(key, "?"))
+		return (ft_byte_to_str(shell->exit_status));
+	return (map_get(&shell->env, key));
+}
+
+static char	*expand(char *str, size_t start, t_shell *shell)
 {
 	size_t	final_len;
 	char	*new_line;
-	int		key_len;
+	size_t	key_len;
 	char	*value;
-	int		i;
 
 	new_line = get_expand_key(str, start);
 	if (new_line == NULL)
 		return (NULL);
-	key_len = ft_strlen(new_line);
-	value = get_expand_value(new_line, quotes, shell);
+	key_len = ft_strlen(new_line) + 1;
+	value = get_expand_value(new_line, shell);
 	free(new_line);
-	final_len = ft_strlen(str) - (key_len + 1) + ft_strlen(value);
-	new_line = ft_calloc(final_len + 1, sizeof(char));
+	final_len = ft_strlen(str) - key_len + ft_strlen(value) + 1;
+	new_line = ft_calloc(final_len, sizeof(char));
 	if (new_line == NULL)
 		return (NULL);
 	if (start > 0)
 		ft_strncpy(new_line, str, start);
-	ft_strlcat(new_line, value, final_len + 1);
-	i = start + key_len + 1;
-	ft_strlcat(new_line, &str[i], final_len + 1);
+	ft_strlcat(new_line, value, final_len);
+	ft_strlcat(new_line, &str[start + key_len], final_len);
 	return (new_line);
+}
+
+static int	remove_dollar_before_quote(char *line, size_t *i, t_status quotes)
+{
+	if (line[*i] != '$' || quotes != NONE || !is_quote(line[*i + 1]))
+		return (0);
+	ft_memmove(&line[*i], &line[*i + 1], ft_strlen(&line[*i + 1]) + 1);
+	if (*i > 0)
+		(*i)--;
+	return (1);
+}
+
+static int	do_expand(char **line, size_t *i, t_status *quotes, t_shell *shell)
+{
+	char	*tmp;
+
+	tmp = expand(*line, *i, shell);
+	if (!tmp)
+	{
+		free(*line);
+		return (0);
+	}
+	free(*line);
+	*line = tmp;
+	*i = 0;
+	*quotes = NONE;
+	return (1);
 }
 
 char	*expand_str(char *str, t_shell *shell)
 {
 	t_status	quotes;
 	char		*line;
-	char		*tmp;
 	size_t		i;
 
-	i = -1;
 	quotes = NONE;
 	line = ft_strdup(str);
-	while (++i < ft_strlen(line))
+	i = 0;
+	while (line[i])
 	{
-		if (line[i] == '$' && quotes == NONE
-			&& (line[i + 1] == '"' || line[i + 1] == '\''))
-		{
-			ft_memmove(&line[i], &line[i + 1], ft_strlen(line) - i);
-			i--;
+		if (remove_dollar_before_quote(line, &i, quotes))
 			continue ;
-		}
 		handle_quotes(line[i], &quotes);
-		if (line[i] == '$' && quotes != QUOTE && is_valid_char(line[i + 1]))
+		if (should_expand(line, i, quotes))
 		{
-			tmp = expand(line, i, shell, quotes);
-			free(line);
-			if (tmp == NULL)
-				return (NULL);
-			line = tmp;
-			i = -1;
-			quotes = NONE;
-			if (line[0] == '\0')
-				break ;
+			if (do_expand(&line, &i, &quotes, shell))
+				continue ;
+			free(str);
+			return (NULL);
 		}
+		i++;
 	}
 	free(str);
 	return (line);
-}
-
-static void	delete_token(t_token **token_ptr, t_token *token)
-{
-	if (token->next != NULL)
-		token->next->prev = token->prev;
-	if (token->prev != NULL)
-		token->prev->next = token->next;
-	else
-		*token_ptr = token->next;
-	free(token->value);
-	free(token);
-}
-
-static bool	remove_quotes_from_token(t_token *token)
-{
-	char	*tmp;
-
-	tmp = remove_closed_quotes(token->value);
-	if (tmp == NULL)
-		return (false);
-	free(token->value);
-	token->value = tmp;
-	return (true);
-}
-
-bool	expand_tokens(t_token **token_ptr, t_shell *shell)
-{
-	t_token	*token;
-
-	token = *token_ptr;
-	while (token->type != EMPTY)
-	{
-		if (token->type == WORD
-			&& (token->prev == NULL || token->prev->type != REDIR
-				|| !(token->prev->value[0] == '<'
-					&& token->prev->value[1] == '<')))
-		{
-			token->value = expand_str(token->value, shell);
-			if (token->value == NULL)
-				return (false);
-			if (token->value[0] == '\0')
-			{
-				delete_token(token_ptr, token);
-				token = *token_ptr;
-				continue ;
-			}
-			if (!remove_quotes_from_token(token))
-				return (false);
-		}
-		token = token->next;
-	}
-	return (true);
 }

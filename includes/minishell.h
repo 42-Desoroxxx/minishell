@@ -145,13 +145,6 @@ parse_heredoc(t_token *token, bool last, t_shell *shell, const int previous_fd);
 bool
 pipe_my_line(t_cmd_table *cmd_table);
 
-// parsing_utils.c
-int
-count_redirs(t_token *token, int *in, int *out);
-
-char
-*remove_closed_quotes(char *str);
-
 // check_gramar.c
 void
 check_pipe(t_token *token, t_token **token_list);
@@ -168,24 +161,19 @@ check_word(t_token *token, t_token **token_list);
 char
 *expand_str(char *str, t_shell *shell);
 
+// expand_tokens.c
 bool
 expand_tokens(t_token **token_ptr, t_shell *shell);
 
 // expand_utils.c
-char
-*get_expand_key(char *str, int start);
-
-char
-*get_expand_value(char	*key, t_status quotes, t_shell *shell);
+bool
+is_quote(const char c);
 
 bool
-is_quote(char c);
+should_expand(char *line, size_t i, t_status quotes);
 
-void
-handle_quotes(char c, t_status *quotes);
-
-bool
-is_valid_char(char c);
+char
+*get_expand_key(const char *str, const size_t start);
 
 // --- Executing ---
 
@@ -277,5 +265,12 @@ free_tokens(t_token **token_list);
 // prompt_utils.c
 char
 *get_prompt(const t_shell *shell);
+
+// quotes_utils.c
+void
+handle_quotes(char c, t_status *quotes);
+
+char
+*remove_closed_quotes(char *str);
 
 #endif
