@@ -29,7 +29,6 @@ void	setup_child(t_cmd *cmd, t_shell *shell, pid_t *pids,
 	close_all_fds(cmd_table);
 	if (cmd->in_redir == -1 || cmd->out_redir == -1)
 	{
-		perror(SHELL_NAME);
 		free_child(pids, cmd_table, &shell->env);
 		exit(1);
 	}
