@@ -69,7 +69,7 @@ int	ms_exit(char *args[], t_shell *shell)
 
 	ft_fprintf(STDERR_FILENO, "Bye!\n");
 	if (args[1] == NULL)
-		exit(shell->exit_status);
+		return (shell->exit_status);
 	if (args[2] != NULL)
 	{
 		ft_fprintf(STDERR_FILENO, ANSI_RED SHELL_NAME
@@ -81,8 +81,8 @@ int	ms_exit(char *args[], t_shell *shell)
 		ft_fprintf(STDERR_FILENO, ANSI_RED SHELL_NAME
 			" [Error]: exit: %s: numeric argument required\n" ANSI_RESET,
 			args[1]);
-		exit(2);
+		return (2);
 	}
 	status = ft_atol(args[1]);
-	exit((uint8_t) status);
+	return ((uint8_t) status);
 }

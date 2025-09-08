@@ -38,7 +38,7 @@ static void	wait_for_childs(pid_t *pids, size_t pid_count, t_shell *shell)
 /**
  * @return true if nothing needs to be further executed, false otherwise
  */
-static bool	exec_single_cmd(t_cmd *cmd, t_shell *shell)
+static bool	exec_single_cmd(t_cmd *cmd, t_shell *shell, t_cmd_table *cmd_table)
 {
 	if (cmd->args == NULL || cmd->args[0] == NULL)
 	{
@@ -50,6 +50,14 @@ static bool	exec_single_cmd(t_cmd *cmd, t_shell *shell)
 	if (is_builtin(cmd))
 	{
 		exec_lonely_builtin(cmd, shell);
+		if (ft_str_equal(cmd->args[0], "exit"))
+		{
+			if (cmd->args[1] != NULL && cmd->args[2] != NULL)
+				return (true);
+			free_cmd_table((t_cmd_table **) &cmd_table);
+			map_free(&shell->env);
+			exit(shell->exit_status);
+		}
 		return (true);
 	}
 	return (false);
@@ -86,7 +94,7 @@ void	exec_table(t_cmd_table *cmd_table, t_shell *shell)
 	size_t	i;
 
 	if (cmd_table->size == 1)
-		if (exec_single_cmd(&cmd_table->cmds[0], shell))
+		if (exec_single_cmd(&cmd_table->cmds[0], shell, cmd_table))
 			return ;
 	pids = ft_calloc(cmd_table->size + 1, sizeof(pid_t));
 	if (pids == NULL)
