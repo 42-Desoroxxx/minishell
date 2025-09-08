@@ -99,9 +99,11 @@ bool	parse_redirs(t_cmd *cmd, t_token **token_ptr, t_token *token,
 		else if (ft_str_equal(token->value, "<<"))
 			cmd->in_redir = parse_heredoc(token->next, ++in == max[0], shell,
 					cmd->in_redir);
-		else if (ft_str_equal(token->value, ">") && cmd->out_redir != -1)
+		else if (ft_str_equal(token->value, ">") && cmd->in_redir != -1
+			&& cmd->out_redir != -1)
 			cmd->out_redir = parse_overwrite(token->next, ++out == max[1]);
-		else if (ft_str_equal(token->value, ">>") && cmd->out_redir != -1)
+		else if (ft_str_equal(token->value, ">>") && cmd->in_redir != -1
+			&& cmd->out_redir != -1)
 			cmd->out_redir = parse_append(token->next, ++out == max[1]);
 		token = token->next;
 	}
