@@ -33,10 +33,8 @@ static void	handle_interupt(const int signal)
 	if (signal != SIGINT)
 		return ;
 	g_signal = SIGINT;
-	rl_crlf();
+	ft_printf("\n");
 	rl_replace_line("", 0);
-	rl_set_prompt(ANSI_RED "> " ANSI_RESET);
-	rl_expand_prompt(rl_prompt);
 	rl_on_new_line();
 	rl_redisplay();
 }
