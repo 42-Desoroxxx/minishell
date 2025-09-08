@@ -75,6 +75,7 @@ void	child_external(t_cmd *cmd, t_shell *shell, pid_t *pids,
 {
 	char	**envp;
 	char	*path;
+	int		errno_save;
 
 	if (cmd->args == NULL || cmd->args[0] == NULL)
 	{
@@ -84,13 +85,11 @@ void	child_external(t_cmd *cmd, t_shell *shell, pid_t *pids,
 	path = get_path(cmd, shell, pids, cmd_table);
 	envp = create_envp(&shell->env, pids, cmd_table, path);
 	execve(path, cmd->args, envp);
+	errno_save = errno;
+	perror(SHELL_NAME);
 	free_external_child(pids, cmd_table, &shell->env, path);
 	free_envp(&envp);
-	if (errno == ENOENT)
-	{
-		ft_fprintf(STDERR_FILENO, ANSI_RED SHELL_NAME
-			" [Error]: command not found (%s)\n" ANSI_RESET, cmd->args[0]);
+	if (errno_save == ENOENT)
 		exit(127);
-	}
 	exit(126);
 }
