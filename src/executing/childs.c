@@ -26,7 +26,7 @@ void	setup_child(t_cmd *cmd, t_shell *shell, pid_t *pids,
 		dup2(cmd->in_redir, STDIN_FILENO);
 	if (cmd->out_redir > 0)
 		dup2(cmd->out_redir, STDOUT_FILENO);
-	close_all_fds(cmd_table);;
+	close_all_fds(cmd_table);
 	if (cmd->in_redir == -1 || cmd->out_redir == -1)
 	{
 		perror(SHELL_NAME);
