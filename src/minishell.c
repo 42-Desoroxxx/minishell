@@ -77,6 +77,8 @@ int	main(int argc, char *argv[], char *envp[])
 			if (DEBUG)
 				print_tokens(*tokens);
 			cmd_table = parser(&tokens, &shell);
+			if (DEBUG)
+				print_tokens(*tokens);
 			free_tokens(&tokens);
 			if (cmd_table == NULL)
 			{

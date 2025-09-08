@@ -16,7 +16,8 @@ static bool	build_cmd_line(t_token **token_ptr, t_shell *shell, t_cmd *cmd)
 {
 	if ((*token_ptr)->type == PIPE)
 		*token_ptr = (*token_ptr)->next;
-	if (!parse_redirs(cmd, token_ptr, *token_ptr, shell) || !parse_words(cmd, token_ptr))
+	if (!parse_redirs(cmd, token_ptr, *token_ptr, shell)
+		|| !parse_words(cmd, token_ptr))
 		return (false);
 	return (true);
 }
@@ -70,7 +71,5 @@ t_cmd_table	*parser(t_token **token_list, t_shell *shell)
 		free_tokens(token_list);
 		return (NULL);
 	}
-	if (DEBUG)
-		print_tokens(**token_list);
 	return (build_cmd_table(token_list, shell));
 }

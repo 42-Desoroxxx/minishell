@@ -12,6 +12,11 @@
 
 #include <minishell.h>
 
+bool	is_quote(const char c)
+{
+	return (c == '\'' || c == '"');
+}
+
 void	handle_quotes(const char c, t_status *quotes)
 {
 	t_status	type;

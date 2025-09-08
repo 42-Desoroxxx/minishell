@@ -12,11 +12,6 @@
 
 #include <minishell.h>
 
-bool	is_quote(const char c)
-{
-	return (c == '\'' || c == '"');
-}
-
 static bool	is_valid_key_start(const char c)
 {
 	return ((c == '_')
@@ -36,9 +31,9 @@ bool	should_expand(char *line, size_t i, t_status quotes)
 	return (line[i + 1] == '?' || is_valid_key_start(line[i + 1]));
 }
 
-static size_t  expand_key_len(const char *str)
+static size_t	expand_key_len(const char *str)
 {
-	size_t  i;
+	size_t	i;
 
 	if (str == NULL || str[0] == '\0')
 		return (0);

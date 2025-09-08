@@ -167,9 +167,6 @@ expand_tokens(t_token **token_ptr, t_shell *shell);
 
 // expand_utils.c
 bool
-is_quote(const char c);
-
-bool
 should_expand(char *line, size_t i, t_status quotes);
 
 char
@@ -267,6 +264,9 @@ char
 *get_prompt(const t_shell *shell);
 
 // quotes_utils.c
+bool
+is_quote(const char c);
+
 void
 handle_quotes(char c, t_status *quotes);
 
