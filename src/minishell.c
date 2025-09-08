@@ -51,8 +51,7 @@ static void	process(char *line, t_shell *shell)
 		free(line);
 		return ;
 	}
-	if (line[0] != ' ')
-		add_history(line);
+	add_history(line);
 	tokens = lexer(line);
 	free(line);
 	if (tokens == NULL)

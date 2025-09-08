@@ -87,6 +87,10 @@ void	child_external(t_cmd *cmd, t_shell *shell, pid_t *pids,
 	free_external_child(pids, cmd_table, &shell->env, path);
 	free_envp(&envp);
 	if (errno == ENOENT)
+	{
+		ft_fprintf(STDERR_FILENO, ANSI_RED SHELL_NAME
+			" [Error]: command not found (%s)\n" ANSI_RESET, cmd->args[0]);
 		exit(127);
+	}
 	exit(126);
 }
