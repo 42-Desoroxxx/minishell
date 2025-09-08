@@ -15,7 +15,7 @@
 
 static void	wait_for_childs(pid_t *pids, size_t pid_count, t_shell *shell)
 {
-	int	status;
+	int		status;
 	size_t	i;
 
 	i = 0;
@@ -56,7 +56,7 @@ static bool	exec_single_cmd(t_cmd *cmd, t_shell *shell)
 	return (false);
 }
 
-static pid_t exec_cmd(t_cmd *cmd, t_shell *shell, pid_t *pids,
+static pid_t	exec_cmd(t_cmd *cmd, t_shell *shell, pid_t *pids,
 	t_cmd_table *cmd_table)
 {
 	pid_t	pid;

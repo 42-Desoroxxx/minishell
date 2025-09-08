@@ -29,10 +29,6 @@
 # include <sys/stat.h>
 # include <errno.h>
 
-# ifndef DEBUG
-#  define DEBUG false
-# endif
-
 # define SHELL_NAME "Eepyshell"
 
 # define ANSI_RED "\001\033[31m\002"
@@ -195,6 +191,20 @@ child_external(t_cmd *cmd, t_shell *shell, pid_t *pids, t_cmd_table *cmd_table);
 void
 child_builtin(t_cmd *cmd, t_shell *shell, pid_t *pids, t_cmd_table *cmd_table);
 
+// externals.c
+void
+free_envp(char ***envp_ptr);
+
+void
+free_external_child(pid_t *pids, t_cmd_table *cmd_table, t_map *env,
+	char *path);
+
+char
+**create_envp(t_map *env, pid_t *pids, t_cmd_table *cmd_table, char *path);
+
+bool
+exec_sh(t_cmd *cmd, char *path, char **envp);
+
 // exec_utils.c
 void
 close_fds(t_cmd *cmd);
@@ -269,12 +279,6 @@ print_cmd_table(const t_cmd_table *cmd_table);
 // env_utils
 t_map
 create_env(char *envp[]);
-
-void
-free_envp(char ***envp_ptr);
-
-char
-**create_envp(t_map env);
 
 // free_utils.c
 void

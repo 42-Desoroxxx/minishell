@@ -44,14 +44,15 @@ void	setup_child(t_cmd *cmd, t_shell *shell, pid_t *pids,
 void	child_builtin(t_cmd *cmd, t_shell *shell, pid_t *pids,
 	t_cmd_table *cmd_table)
 {
-	int status;
+	int	status;
 
 	status = exec_builtin(cmd, shell);
 	free_child(pids, cmd_table, &shell->env);
 	exit(status);
 }
 
-static char	*get_path(t_cmd *cmd, t_shell *shell)
+static char	*get_path(t_cmd *cmd, t_shell *shell, pid_t *pids,
+	t_cmd_table *cmd_table)
 {
 	char	*path;
 
@@ -66,7 +67,12 @@ static char	*get_path(t_cmd *cmd, t_shell *shell)
 		ft_fprintf(STDERR_FILENO, ANSI_RED SHELL_NAME " [Error]: "
 			"command not found (%s)\n" ANSI_RESET, cmd->args[0]);
 		shell->exit_status = 127;
-		return (NULL);
+		path = NULL;
+	}
+	if (path == NULL)
+	{
+		free_child(pids, cmd_table, &shell->env);
+		exit(127);
 	}
 	return (path);
 }
@@ -82,42 +88,17 @@ void	child_external(t_cmd *cmd, t_shell *shell, pid_t *pids,
 		free_child(pids, cmd_table, &shell->env);
 		exit(0);
 	}
-	path = get_path(cmd, shell);
-	if (path == NULL)
+	path = get_path(cmd, shell, pids, cmd_table);
+	envp = create_envp(&shell->env, pids, cmd_table, path);
+	execve(path, cmd->args, envp);
+	if (errno == ENOEXEC && !exec_sh(cmd, path, envp))
 	{
-		free_child(pids, cmd_table, &shell->env);
-		exit(127);
-	}
-	envp = create_envp(shell->env);
-	if (envp == NULL)
-	{
-		free_child(pids, cmd_table, &shell->env);
-		free(path);
+		free_external_child(pids, cmd_table, &shell->env, path);
+		free_envp(&envp);
 		exit(1);
 	}
-	execve(path, cmd->args, envp);
-	if (errno == ENOEXEC)
-	{
-		size_t argc = 0;
-		while (cmd->args[argc] != NULL)
-			argc++;
-		char **sh_argv = malloc((argc + 2) * sizeof(char *));
-		if (sh_argv == NULL)
-		{
-			free(path);
-			exit(1);
-		}
-		sh_argv[0] = "sh";
-		sh_argv[1] = path;
-		for (size_t k = 1; k < argc; k++)
-			sh_argv[k + 1] = cmd->args[k];
-		sh_argv[argc + 1] = NULL;
-		execve("/bin/sh", sh_argv, envp);
-		free(sh_argv);
-	}
-	free_child(pids, cmd_table, &shell->env);
+	free_external_child(pids, cmd_table, &shell->env, path);
 	free_envp(&envp);
-	free(path);
 	if (errno == ENOENT)
 		exit(127);
 	exit(126);

@@ -41,18 +41,46 @@ static void	handle_interupt(const int signal)
 	rl_redisplay();
 }
 
-int	main(int argc, char *argv[], char *envp[])
+static void	process(char *line, t_shell *shell)
 {
 	t_cmd_table	*cmd_table;
 	t_token		*tokens;
-	char		*prompt;
-	char		*line;
-	t_shell		shell;
 
+	if (line[0] != ' ')
+		add_history(line);
+	tokens = lexer(line);
+	free(line);
+	if (tokens != NULL)
+	{
+		cmd_table = parser(&tokens, shell);
+		free_tokens(&tokens);
+		if (cmd_table == NULL)
+		{
+			if (shell->exit_status != 2)
+				perror(SHELL_NAME);
+			free_cmd_table((t_cmd_table **) &cmd_table);
+			return ;
+		}
+		exec_table(cmd_table, shell);
+		free_cmd_table((t_cmd_table **) &cmd_table);
+	}
+}
+
+static void	setup_signals(int argc, char *argv[])
+{
 	(void)argc;
 	(void)argv;
 	signal(SIGQUIT, SIG_IGN);
 	signal(SIGINT, handle_interupt);
+}
+
+int	main(int argc, char *argv[], char *envp[])
+{
+	char		*prompt;
+	char		*line;
+	t_shell		shell;
+
+	setup_signals(argc, argv);
 	shell = create_shell(envp);
 	while (true)
 	{
@@ -68,33 +96,7 @@ int	main(int argc, char *argv[], char *envp[])
 			free(line);
 			continue ;
 		}
-		if (line[0] != ' ')
-			add_history(line);
-		tokens = lexer(line);
-		free(line);
-		if (tokens != NULL)
-		{
-			if (DEBUG)
-				print_tokens(*tokens);
-			cmd_table = parser(&tokens, &shell);
-			if (DEBUG)
-				print_tokens(*tokens);
-			free_tokens(&tokens);
-			if (cmd_table == NULL)
-			{
-				if (shell.exit_status != 2)
-					perror(SHELL_NAME);
-				free_cmd_table((t_cmd_table **) &cmd_table);
-				continue ;
-			}
-			if (cmd_table != NULL)
-			{
-				if (DEBUG)
-					print_cmd_table(cmd_table);
-				exec_table(cmd_table, &shell);
-				free_cmd_table((t_cmd_table **) &cmd_table);
-			}
-		}
+		process(line, &shell);
 	}
 	map_free(&shell.env);
 	exit(shell.exit_status);
