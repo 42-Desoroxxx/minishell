@@ -46,7 +46,7 @@ static bool	check_number(const char *str)
 	i = 0;
 	empty = true;
 	negative = false;
-	while (str[i] == ' ')
+	while (str[i] == ' ' || str[i] == '\t')
 		i++;
 	if (str[i] == '-' || str[i] == '+')
 		negative = str[i++] == '-';
