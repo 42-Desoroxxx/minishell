@@ -41,6 +41,8 @@ int	exec_builtin(t_cmd *cmd, t_shell *shell)
 		return (env(cmd->args, &shell->env));
 	if (ft_str_equal(cmd->args[0], "exit"))
 		return (ms_exit(cmd->args, shell));
+	ft_fprintf(STDERR_FILENO, ANSI_RED SHELL_NAME
+			" [Error]: command not found (%s)\n" ANSI_RESET, cmd->args[0]);
 	return (127);
 }
 
