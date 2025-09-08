@@ -15,7 +15,10 @@
 static int	parse_redir(t_token *token, const bool last)
 {
 	if (access(token->value, F_OK) == -1)
+	{
+		perror(SHELL_NAME);
 		return (-1);
+	}
 	if (last)
 		return (open(token->value, O_RDONLY | O_CLOEXEC));
 	return (-2);
@@ -27,7 +30,10 @@ static int	parse_overwrite(t_token *token, const bool last)
 
 	fd = open(token->value, O_CREAT | O_WRONLY | O_CLOEXEC | O_TRUNC, 0644);
 	if (fd < 0)
+	{
+		perror(SHELL_NAME);
 		return (-1);
+	}
 	if (last)
 		return (fd);
 	close(fd);
@@ -40,7 +46,10 @@ static int	parse_append(t_token *token, const bool last)
 
 	fd = open(token->value, O_CREAT | O_WRONLY | O_CLOEXEC | O_APPEND, 0644);
 	if (fd < 0)
+	{
+		perror(SHELL_NAME);
 		return (-1);
+	}
 	if (last)
 		return (fd);
 	close(fd);

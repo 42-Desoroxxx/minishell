@@ -41,11 +41,9 @@ static bool	exec_single_cmd(t_cmd *cmd, t_shell *shell)
 {
 	if (cmd->args == NULL || cmd->args[0] == NULL)
 	{
+		shell->exit_status = 0;
 		if (cmd->in_redir == -1 || cmd->out_redir == -1)
-		{
-			perror(SHELL_NAME);
 			shell->exit_status = 1;
-		}
 		return (true);
 	}
 	if (is_builtin(cmd))

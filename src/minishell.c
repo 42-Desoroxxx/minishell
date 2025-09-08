@@ -66,12 +66,13 @@ static void	process(char *line, t_shell *shell)
 	}
 }
 
-static void	setup_signals(int argc, char *argv[])
+static t_shell	setup(int argc, char *argv[], char *envp[])
 {
 	(void)argc;
 	(void)argv;
 	signal(SIGQUIT, SIG_IGN);
 	signal(SIGINT, handle_interupt);
+	return (create_shell(envp));
 }
 
 int	main(int argc, char *argv[], char *envp[])
@@ -80,14 +81,15 @@ int	main(int argc, char *argv[], char *envp[])
 	char		*line;
 	t_shell		shell;
 
-	setup_signals(argc, argv);
-	shell = create_shell(envp);
+	shell = setup(argc, argv, envp);
 	while (true)
 	{
 		prompt = get_prompt(&shell);
 		line = readline(prompt);
 		if (g_signal == SIGINT)
 			shell.exit_status = 130;
+		if (g_signal == SIGINT)
+			g_signal = 0;
 		free(prompt);
 		if (line == NULL)
 			break ;

@@ -22,6 +22,11 @@ static char	*random_string(void)
 
 	ft_bzero(string, RANDOM_STRING_LEN + 1);
 	fd = open("/dev/urandom", O_RDONLY | O_CLOEXEC);
+	if (fd < 0)
+	{
+		perror(SHELL_NAME);
+		return (NULL);
+	}
 	if (read(fd, string, RANDOM_STRING_LEN) < 0)
 		close(close(fd));
 	i = 0;
@@ -82,8 +87,10 @@ int	parse_heredoc(t_token *token, bool last, t_shell *shell,
 	ft_strlcat(rnd_filename, random_string(), 5 + RANDOM_STRING_LEN + 1);
 	fd = open(rnd_filename, O_CREAT | O_WRONLY | O_CLOEXEC | O_TRUNC, 0644);
 	if (fd < 0)
+	{
+		perror(SHELL_NAME);
 		return (-1);
-	ft_printf(SHELL_NAME ": Here-document, waiting for `%s`\n", delimiter);
+	}
 	read_heredoc_input(fd, delimiter, !contains_quotes(token->value), shell);
 	free(delimiter);
 	close(fd);
