@@ -124,7 +124,7 @@ bool
 check_last(t_cmd *cmd);
 
 // parse_redirs.c
-bool
+void
 parse_redirs(t_cmd *cmd, t_token **token_ptr, t_token *token, t_shell *shell);
 
 // parse_heredoc.c

@@ -46,13 +46,13 @@ static bool	check_number(const char *str)
 	i = 0;
 	empty = true;
 	negative = false;
-	if (str[i] == '-' || str[i] == '+')
-		negative = str[i++] == '-';
 	while (str[i] == '0')
 	{
 		empty = false;
 		i++;
 	}
+	if (str[i] == '-' || str[i] == '+')
+		negative = str[i++] == '-';
 	digit_count = 0;
 	if (!count_digits(&str[i], &digit_count))
 		return (false);
@@ -70,18 +70,18 @@ int	ms_exit(char *args[], t_shell *shell)
 	ft_fprintf(STDERR_FILENO, "Bye!\n");
 	if (args[1] == NULL)
 		return (shell->exit_status);
-	if (args[2] != NULL)
-	{
-		ft_fprintf(STDERR_FILENO, ANSI_RED SHELL_NAME
-			" [Error]: exit: too many arguments\n" ANSI_RESET);
-		return (1);
-	}
 	if (!check_number(args[1]))
 	{
 		ft_fprintf(STDERR_FILENO, ANSI_RED SHELL_NAME
 			" [Error]: exit: %s: numeric argument required\n" ANSI_RESET,
 			args[1]);
 		return (2);
+	}
+	if (args[2] != NULL)
+	{
+		ft_fprintf(STDERR_FILENO, ANSI_RED SHELL_NAME
+			" [Error]: exit: too many arguments\n" ANSI_RESET);
+		return (1);
 	}
 	status = ft_atol(args[1]);
 	return ((uint8_t) status);

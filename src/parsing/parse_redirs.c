@@ -79,7 +79,7 @@ static int	count_redirs(t_token *token, int *in, int *out)
 	return (total);
 }
 
-bool	parse_redirs(t_cmd *cmd, t_token **token_ptr, t_token *token,
+void	parse_redirs(t_cmd *cmd, t_token **token_ptr, t_token *token,
 	t_shell *shell)
 {
 	int		total;
@@ -107,5 +107,4 @@ bool	parse_redirs(t_cmd *cmd, t_token **token_ptr, t_token *token,
 			cmd->out_redir = parse_append(token->next, ++out == max[1]);
 		token = token->next;
 	}
-	return (check_last(cmd));
 }
