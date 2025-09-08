@@ -46,13 +46,15 @@ static bool	check_number(const char *str)
 	i = 0;
 	empty = true;
 	negative = false;
+	while (str[i] == ' ')
+		i++;
+	if (str[i] == '-' || str[i] == '+')
+		negative = str[i++] == '-';
 	while (str[i] == '0')
 	{
 		empty = false;
 		i++;
 	}
-	if (str[i] == '-' || str[i] == '+')
-		negative = str[i++] == '-';
 	digit_count = 0;
 	if (!count_digits(&str[i], &digit_count))
 		return (false);
