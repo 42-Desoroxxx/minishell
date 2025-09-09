@@ -40,7 +40,7 @@ static bool	should_expand_token(t_token *token)
 {
 	return (token->type == WORD
 		&& (token->prev == NULL || token->prev->type != REDIR
-				|| !ft_str_equal(token->prev->value, "<<")));
+			|| !ft_str_equal(token->prev->value, "<<")));
 }
 
 bool	expand_tokens(t_token **token_ptr, t_shell *shell)

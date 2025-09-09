@@ -40,8 +40,8 @@ static char	*random_string(void)
 static void	print_error(const int line_count, const char *delimiter)
 {
 	ft_fprintf(STDERR_FILENO, "\n" ANSI_YELLOW SHELL_NAME
-				" [WARNING]: Here-document at line %d delimited by end-of-file"
-				" (wanted `%s`)\n" ANSI_RESET, line_count + 1, delimiter);
+		" [WARNING]: Here-document at line %d delimited by end-of-file"
+		" (wanted `%s`)\n" ANSI_RESET, line_count + 1, delimiter);
 }
 
 static void	read_heredoc_input(int fd, char *delimiter, bool expand,

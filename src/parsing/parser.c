@@ -36,12 +36,18 @@ static t_cmd_table	*build_cmd_table(t_token **token_ptr, t_shell *shell)
 	while (++i < cmd_count)
 	{
 		if (!build_cmd_line(token_ptr, shell, &cmd_table->cmds[i]))
+		{
+			free(cmd_table);
 			return (NULL);
+		}
 		if ((*token_ptr)->type == EMPTY)
 			break ;
 	}
 	if (!pipe_my_line(cmd_table))
+	{
+		free(cmd_table);
 		return (NULL);
+	}
 	return (cmd_table);
 }
 
