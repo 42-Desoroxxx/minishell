@@ -32,11 +32,13 @@ static void	handle_interupt(const int signal)
 {
 	if (signal != SIGINT)
 		return ;
-	g_signal = SIGINT;
 	ft_printf("\n");
 	rl_replace_line("", 0);
 	rl_on_new_line();
 	rl_redisplay();
+	if (ft_str_equal(rl_prompt, "> "))
+		return ;
+	g_signal = SIGINT;
 }
 
 static void	process(char *line, t_shell *shell)
