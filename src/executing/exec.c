@@ -55,6 +55,7 @@ static bool	exec_single_cmd(t_cmd *cmd, t_shell *shell, t_cmd_table *cmd_table)
 			if (cmd->args[1] != NULL && cmd->args[2] != NULL)
 				return (true);
 			free_cmd_table((t_cmd_table **) &cmd_table);
+			rl_clear_history();
 			map_free(&shell->env);
 			exit(shell->exit_status);
 		}

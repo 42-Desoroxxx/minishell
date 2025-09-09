@@ -92,6 +92,7 @@ int	main(int argc, char *argv[], char *envp[])
 			break ;
 		process(line, &shell);
 	}
+	rl_clear_history();
 	map_free(&shell.env);
 	exit(shell.exit_status);
 }
