@@ -67,6 +67,12 @@ static void	process(char *line, t_shell *shell)
 	free_cmd_table((t_cmd_table **) &cmd_table);
 }
 
+static void	setup_signals(void)
+{
+	signal(SIGQUIT, SIG_IGN);
+	signal(SIGINT, handle_interupt);
+}
+
 int	main(int argc, char *argv[], char *envp[])
 {
 	char		*prompt;
@@ -75,8 +81,7 @@ int	main(int argc, char *argv[], char *envp[])
 
 	(void)argc;
 	(void)argv;
-	signal(SIGQUIT, SIG_IGN);
-	signal(SIGINT, handle_interupt);
+	setup_signals();
 	shell = create_shell(envp);
 	while (true)
 	{
