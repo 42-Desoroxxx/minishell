@@ -6,7 +6,7 @@
 /*   By: rvitiell <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/19 23:07:25 by rvitiell          #+#    #+#             */
-/*   Updated: 2025/08/19 23:07:27 by rvitiell         ###   ########.fr       */
+/*   Updated: 2025/09/08 20:47:24 by rvitiell         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,6 +45,8 @@ static char	*expand(char *str, size_t start, t_shell *shell)
 
 static int	remove_dollar_before_quote(char *line, size_t *i, t_status quotes)
 {
+	if (line == NULL)
+		return (0);
 	if (line[*i] != '$' || quotes != NONE || !is_quote(line[*i + 1]))
 		return (0);
 	ft_memmove(&line[*i], &line[*i + 1], ft_strlen(&line[*i + 1]) + 1);

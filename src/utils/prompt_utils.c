@@ -39,6 +39,11 @@ static char	*add_current_dir(const t_shell *shell, char *prompt)
 	{
 		prompt = ft_str_add(prompt, "~");
 		tmp = ft_strdup(cwd + home_len);
+		if (tmp == NULL)
+		{
+			free(prompt);
+			return (NULL);
+		}
 		free((void *) cwd);
 		cwd = tmp;
 	}
@@ -75,6 +80,8 @@ char	*get_prompt(const t_shell *shell)
 	char	*prompt;
 
 	prompt = create_prompt(shell);
+	if (prompt == NULL)
+		return (NULL);
 	if (shell->exit_status != 0)
 		prompt = ft_str_add(prompt, "\n" ANSI_RED "> " ANSI_RESET);
 	else

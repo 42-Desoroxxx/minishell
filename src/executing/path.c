@@ -82,6 +82,8 @@ char	*find_in_path(t_map env, char *name)
 	if (path == NULL || ft_str_equal(name, ".."))
 		return (NULL);
 	path_list = ft_split(path, ':');
+	if (path_list == NULL)
+		return (NULL);
 	result = NULL;
 	i = -1;
 	while (path_list[++i] != NULL)

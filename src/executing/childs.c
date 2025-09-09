@@ -58,7 +58,10 @@ static char	*get_path(t_cmd *cmd, t_shell *shell, pid_t *pids,
 	else if (cmd->args[0][0] != '\0')
 		path = ft_strdup(cmd->args[0]);
 	if (path != NULL && path[0] == '\0')
+	{
+		free(path);
 		path = NULL;
+	}
 	if (path == NULL)
 	{
 		ft_fprintf(STDERR_FILENO, ANSI_RED SHELL_NAME
